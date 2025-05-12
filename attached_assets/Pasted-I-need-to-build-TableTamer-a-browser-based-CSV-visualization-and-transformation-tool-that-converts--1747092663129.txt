@@ -1,0 +1,61 @@
+I need to build TableTamer, a browser-based CSV visualization and transformation tool that converts raw CSV data into beautiful, interactive tables. The application should be fully client-side with no backend requirements.
+
+Technical Stack:
+- Framework: React 18 with functional components and hooks
+- Styling: TailwindCSS for clean, responsive design
+- Table: TanStack Table (react-table v8) for advanced table features
+- CSV Parsing: PapaParse for robust CSV handling
+- File Export: FileSaver.js for downloading transformed data
+- State Management: React Context API for application state
+- Charts (optional): Recharts for basic visualization
+
+Core Requirements:
+
+1. File Import Interface:
+   - Create an attractive drag-and-drop zone with visual feedback
+   - Support traditional file input as fallback
+   - Show loading indicators during file processing
+   - Support for large files (1MB+) with graceful handling
+
+2. Table Display:
+   - Implement a responsive, interactive table with fixed headers
+   - Add pagination with configurable page size
+   - Enable column sorting (single and multi-column)
+   - Support column resizing and reordering
+   - Implement cell rendering based on data type (format dates, numbers, etc.)
+   - Add inline editing for cell values and column headers
+
+3. Data Manipulation Features:
+   - Build a search function that filters across all columns
+   - Create column-specific filters with appropriate UI for data types
+   - Add ability to hide/show columns
+   - Implement highlighting for duplicates and missing values
+   - Add basic data transformations (text case changing, number formatting)
+
+4. Export Functionality:
+   - Export to CSV with proper escaping and formatting
+   - Export to JSON with configurable options
+   - Include options to export all data or filtered/visible data only
+   - Add copy to clipboard functionality
+
+5. User Experience:
+   - Implement light/dark mode toggle with system preference detection
+   - Create a clean, intuitive UI with proper spacing and typography
+   - Add helpful tooltips and empty states
+   - Implement keyboard shortcuts for common actions
+   - Save table state to localStorage to persist between sessions
+
+6. Nice-to-Have Features (if time permits):
+   - Basic summary statistics for numeric columns
+   - Simple data visualization (histograms, bar charts)
+   - Column type detection and smart formatting
+   - Data transformation history with undo/redo
+
+Page Structure:
+1. Header with app name, theme toggle, and basic controls
+2. File import area (prominent when no file is loaded)
+3. Table view with toolbar for search and actions
+4. Column management panel (can be a sidebar or modal)
+5. Footer with export options and file information
+
+Focus on making the interface intuitive and responsive, with clean animations for state changes. Proper error handling should be implemented throughout, especially for file parsing issues.
