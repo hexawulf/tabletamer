@@ -88,6 +88,11 @@ A browser-based CSV visualization and transformation tool that converts raw CSV 
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+## Contact
+
+- Author: 0xWulf
+- Email: dev@0xwulf.dev
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

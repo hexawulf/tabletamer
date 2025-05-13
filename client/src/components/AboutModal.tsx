@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,9 @@ export function AboutModal({ onClose }: AboutModalProps) {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>About TableTamer</DialogTitle>
+          <DialogDescription>
+            A browser-based CSV visualization and transformation tool
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="text-center mb-4">
@@ -51,6 +55,16 @@ export function AboutModal({ onClose }: AboutModalProps) {
             <h3 className="font-medium text-lg">Technology</h3>
             <p className="text-sm">
               Built with React, TailwindCSS, PapaParse, and FileSaver.js.
+            </p>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
+            <h3 className="font-medium text-sm">Contact</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Author: 0xWulf
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Email: dev@0xwulf.dev
             </p>
           </div>
         </div>
