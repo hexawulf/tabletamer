@@ -48,6 +48,11 @@ interface TableContextType extends TableData {
 
 const TableContext = createContext<TableContextType | undefined>(undefined);
 
+/**
+ * TableProvider component provides state management for the CSV table data.
+ * Handles loading, filtering, sorting, pagination, and manipulation of table data.
+ * Persists state to localStorage for session recovery.
+ */
 export function TableProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const initialTableData: TableData = {
@@ -150,6 +155,12 @@ export function TableProvider({ children }: { children: ReactNode }) {
   }, [tableData.data, tableData.columnVisibility, tableData.sortColumn, tableData.sortDirection, tableData.pageSize, tableData.hasData]);
 
   // Helper functions
+  /**
+   * Filters table rows based on search query
+   * @param rows Array of data rows to filter
+   * @param query Search query string
+   * @returns Filtered array of rows that match the query
+   */
   const filterRows = (rows: any[], query: string) => {
     if (!query.trim()) {
       return [...rows];
@@ -166,6 +177,13 @@ export function TableProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  /**
+   * Sorts table rows by the specified column and direction
+   * @param rows Array of data rows to sort
+   * @param column Column name to sort by
+   * @param direction Sort direction ("asc" or "desc")
+   * @returns Sorted array of rows
+   */
   const sortRows = (rows: any[], column: string | null, direction: "asc" | "desc") => {
     if (!column) return rows;
 
@@ -196,6 +214,11 @@ export function TableProvider({ children }: { children: ReactNode }) {
   };
 
   // Main actions
+  /**
+   * Loads and parses a CSV file
+   * @param file The CSV file to load
+   * @returns Promise that resolves when the file is loaded and parsed
+   */
   const loadCSV = async (file: File): Promise<void> => {
     if (!file || !file.name.endsWith(".csv")) {
       toast({
@@ -258,6 +281,11 @@ export function TableProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /**
+   * Loads example data for demo purposes
+   * Generates a sample dataset with random values
+   * @returns Promise that resolves when example data is generated and loaded
+   */
   const loadExampleData = async (): Promise<void> => {
     setTableData((prev) => ({ ...prev, isLoading: true, fileName: "example_data.csv" }));
 
@@ -310,6 +338,10 @@ export function TableProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /**
+   * Clears all table data and resets the application state
+   * Also removes data from localStorage
+   */
   const clearData = () => {
     localStorage.removeItem("tableTamerData");
     setTableData(initialTableData);
@@ -435,6 +467,10 @@ export function TableProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  /**
+   * Transforms the value of the currently editing cell
+   * @param type The type of transformation to apply
+   */
   const transformCellValue = (type: "upper" | "lower" | "title" | "clear") => {
     if (editingCell.value === null) return;
     
@@ -467,6 +503,10 @@ export function TableProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  /**
+   * Exports the current table data to a file
+   * @param format The format to export ("csv" or "json")
+   */
   const exportData = (format: "csv" | "json") => {
     if (!tableData.hasData) return;
     
@@ -525,6 +565,10 @@ export function TableProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /**
+   * Copies the current table data to clipboard as JSON
+   * Only includes visible columns in the copied data
+   */
   const copyToClipboard = async () => {
     if (!tableData.hasData) return;
     
