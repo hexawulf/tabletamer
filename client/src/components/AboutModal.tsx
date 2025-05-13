@@ -25,7 +25,7 @@ export function AboutModal({ onClose }: AboutModalProps) {
         <div className="space-y-4">
           <div className="text-center mb-4">
             <h2 className="text-2xl font-bold text-primary">TableTamer v1.0.0</h2>
-            <p className="text-sm text-muted-foreground">Released: May 2023</p>
+            <p className="text-sm text-muted-foreground">Released: May 2025</p>
           </div>
 
           <div className="space-y-2">
