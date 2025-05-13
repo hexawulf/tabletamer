@@ -1,10 +1,20 @@
 import { useState } from "react";
 import { useTableContext } from "@/context/TableContext";
 import { KeyboardShortcuts } from "./KeyboardShortcuts";
+import { AboutModal } from "./AboutModal";
+import { InfoIcon } from "lucide-react";
 
+/**
+ * Footer component displays the application footer including:
+ * - Current file being edited
+ * - Links to keyboard shortcuts
+ * - Link to about information
+ * - Application version
+ */
 export function Footer() {
   const { fileName } = useTableContext();
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
 
   return (
     <>
@@ -20,15 +30,23 @@ export function Footer() {
                 <span>No file loaded</span>
               )}
             </div>
-            <div className="flex space-x-4">
+            <div className="flex flex-wrap space-x-4">
               <button
-                className="hover:text-primary-600 dark:hover:text-primary-400"
+                className="hover:text-primary-600 dark:hover:text-primary-400 flex items-center"
                 onClick={() => setShowKeyboardShortcuts(true)}
               >
                 Keyboard Shortcuts
               </button>
               <span>|</span>
-              <span>TableTamer v1.0</span>
+              <button 
+                className="hover:text-primary-600 dark:hover:text-primary-400 flex items-center"
+                onClick={() => setShowAbout(true)}
+              >
+                <InfoIcon className="h-3.5 w-3.5 mr-1" />
+                About
+              </button>
+              <span>|</span>
+              <span>TableTamer v1.0.0</span>
             </div>
           </div>
         </div>
@@ -36,6 +54,10 @@ export function Footer() {
 
       {showKeyboardShortcuts && (
         <KeyboardShortcuts onClose={() => setShowKeyboardShortcuts(false)} />
+      )}
+      
+      {showAbout && (
+        <AboutModal onClose={() => setShowAbout(false)} />
       )}
     </>
   );
