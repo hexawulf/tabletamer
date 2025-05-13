@@ -7,7 +7,11 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import { TableProvider } from "@/context/TableContext";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
+/**
+ * Router component to handle application routing
+ */
 function Router() {
   return (
     <Switch>
@@ -17,18 +21,24 @@ function Router() {
   );
 }
 
+/**
+ * Main application component that sets up the provider hierarchy
+ * and global application state
+ */
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" storageKey="table-tamer-theme">
-        <TooltipProvider>
-          <TableProvider>
-            <Toaster />
-            <Router />
-          </TableProvider>
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="system" storageKey="table-tamer-theme">
+          <TooltipProvider>
+            <TableProvider>
+              <Toaster />
+              <Router />
+            </TableProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
