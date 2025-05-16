@@ -25,7 +25,7 @@ export function AboutModal({ onClose }: AboutModalProps) {
         <div className="space-y-4">
           <div className="text-center mb-4">
             <h2 className="text-2xl font-bold text-primary">TableTamer v1.0.0</h2>
-            <p className="text-sm text-muted-foreground">Released: May 2024</p>
+            <p className="text-sm text-muted-foreground">Released: May 2025</p>
           </div>
 
           <div className="space-y-2">
@@ -59,15 +59,16 @@ export function AboutModal({ onClose }: AboutModalProps) {
           </div>
 
           <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
-            <h3 className="font-medium text-sm">Contact</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Author: 0xWulf
-            </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Email: dev@0xwulf.dev
-            </p>
-          </div>
-        </div>
+            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
+              <h3 className="font-medium text-sm">Contact</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Author: 0xWulf
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Email: <a href="mailto:dev@0xwulf.dev" className="text-blue-600 hover:underline">dev@0xwulf.dev</a>
+              </p>
+            </div>
+
         <DialogFooter>
           <Button type="button" onClick={onClose}>
             Close
