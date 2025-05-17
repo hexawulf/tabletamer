@@ -2,7 +2,7 @@
 
 A browser-based CSV visualization and transformation tool that converts raw CSV data into beautiful, interactive tables. TableTamer helps users quickly analyze, manipulate, and transform tabular data without requiring any back-end services.
 
-![TableTamer Screenshot](https://placehold.co/600x400?text=TableTamer+Screenshot&font=montserrat)
+![TableTamer Screenshot](screenshots/tabletamer.png)
 
 ## Live Demo
 
