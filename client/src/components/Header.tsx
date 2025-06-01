@@ -1,4 +1,4 @@
-import { MenuIcon, Settings, HelpCircle, Sun, Moon } from "lucide-react";
+import { MenuIcon, Settings, HelpCircle, Sun, Moon, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ui/theme-provider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -37,23 +37,14 @@ export function Header() {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Settings">
-                <Settings className="h-5 w-5" />
-              </Button>
+              <a href="https://github.com/hexawulf/tabletamer" target="_blank">
+                <Button variant="ghost" size="icon" aria-label="View on GitHub">
+                  <Github className="h-5 w-5" />
+                </Button>
+              </a>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Settings</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Help">
-                <HelpCircle className="h-5 w-5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Help</p>
+              <p>View on GitHub</p>
             </TooltipContent>
           </Tooltip>
         </div>
