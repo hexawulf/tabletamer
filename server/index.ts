@@ -1,6 +1,9 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import logger from "./src/logger";
+
+logger.info('✅ Winston logger initialized – startup check');
 
 const app = express();
 app.use(express.json());

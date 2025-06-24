@@ -8,15 +8,12 @@ import { nanoid } from "nanoid";
 
 const viteLogger = createLogger();
 
-export function log(message: string, source = "express") {
-  const formattedTime = new Date().toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  });
+import logger from "./src/logger";
 
-  console.log(`${formattedTime} [${source}] ${message}`);
+export function log(message: string, source = "express") {
+  // The Winston logger already includes a timestamp and service name.
+  // We can simplify this function to just pass the message and source.
+  logger.info(`[${source}] ${message}`);
 }
 
 export async function setupVite(app: Express, server: Server) {
