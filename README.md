@@ -67,12 +67,23 @@ A browser-based CSV visualization and transformation tool that converts raw CSV 
    npm install
    ```
 
-3. Start the development server:
+3. Set up environment variables:
+   Create a `.env` file by copying the example:
+   ```bash
+   cp .env.example .env
+   ```
+   Modify the `.env` file with your desired settings. Key variables include:
+    - `DATABASE_URL`: Connection string for your PostgreSQL database (used by Drizzle ORM).
+    - `PORT`: The port on which the application will run (defaults to 5000).
+    - `LOG_FILE_PATH`: Path to the log file (defaults to `logs/tabletamer.log`).
+    - `NODE_ENV`: Set to `development` or `production`.
+
+4. Start the development server:
    ```bash
    npm run dev
    ```
 
-4. Open your browser to the URL shown in the terminal (typically http://localhost:5000)
+5. Open your browser to the URL shown in the terminal (typically http://localhost:PORT, where PORT is the value from your .env or 5000 by default).
 
 ## Usage Guide
 

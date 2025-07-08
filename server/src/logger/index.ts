@@ -2,7 +2,10 @@ import winston from 'winston';
 import path from 'path';
 import fs from 'fs';
 
-const centralizedLogFile = '/home/zk/logs/tabletamer.log';
+const defaultLogFile = 'logs/tabletamer.log';
+const centralizedLogFile = process.env.LOG_FILE_PATH || defaultLogFile;
+
+// Ensure the log directory exists
 const centralizedLogDir = path.dirname(centralizedLogFile);
 if (!fs.existsSync(centralizedLogDir)) {
   fs.mkdirSync(centralizedLogDir, { recursive: true });
