@@ -37,7 +37,11 @@ export function Header() {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <a href="https://github.com/hexawulf/tabletamer" target="_blank">
+              <a
+                href="https://github.com/0xwulf/tabletamer"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
                 <Button variant="ghost" size="icon" aria-label="View on GitHub">
                   <Github className="h-5 w-5" />
                 </Button>

@@ -10,7 +10,7 @@ export function FileUpload() {
   const handleFileDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsHovering(false);
-    
+
     const files = event.dataTransfer.files;
     if (files.length > 0) {
       loadCSV(files[0]);
@@ -22,6 +22,7 @@ export function FileUpload() {
     if (files && files.length > 0) {
       loadCSV(files[0]);
     }
+    event.target.value = "";
   };
 
   const triggerFileInput = () => {
@@ -31,12 +32,9 @@ export function FileUpload() {
   return (
     <div className="flex flex-col items-center justify-center space-y-6 py-12">
       <div className="text-center space-y-2 max-w-md">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Welcome to TableTamer
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome to TableTamer</h2>
         <p className="text-gray-600 dark:text-gray-400">
-          Import your CSV file to get started. Drag and drop or click below to
-          upload.
+          Import your CSV file to get started. Drag and drop or click below to upload.
         </p>
       </div>
 
@@ -69,9 +67,7 @@ export function FileUpload() {
               </span>{" "}
               or drag and drop
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-              CSV files only
-            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">CSV files only</p>
           </div>
         </div>
         <input

@@ -25,11 +25,7 @@ export function CellEditor({ onClose }: CellEditorProps) {
   }, [editingCell]);
 
   const handleSave = () => {
-    if (
-      editingCell.rowIndex !== null &&
-      editingCell.column !== null &&
-      editingCell.value !== null
-    ) {
+    if (editingCell.rowIndex !== null && editingCell.column !== null) {
       editCell(editingCell.rowIndex, editingCell.column, localValue);
       onClose();
     }
@@ -52,38 +48,25 @@ export function CellEditor({ onClose }: CellEditorProps) {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => {
-                transformCellValue("upper");
-                setLocalValue(editingCell.value || "");
-              }}
+              onClick={() => setLocalValue(transformCellValue("upper", localValue))}
             >
               UPPERCASE
             </Button>
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => {
-                transformCellValue("lower");
-                setLocalValue(editingCell.value || "");
-              }}
+              onClick={() => setLocalValue(transformCellValue("lower", localValue))}
             >
               lowercase
             </Button>
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => {
-                transformCellValue("title");
-                setLocalValue(editingCell.value || "");
-              }}
+              onClick={() => setLocalValue(transformCellValue("title", localValue))}
             >
               Title Case
             </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setLocalValue("")}
-            >
+            <Button variant="destructive" size="sm" onClick={() => setLocalValue("")}>
               Clear
             </Button>
           </div>

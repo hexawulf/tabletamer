@@ -6,7 +6,7 @@ A browser-based CSV visualization and transformation tool that converts raw CSV 
 
 ## Live Demo
 
-[View Live Demo (Coming Soon)](https://tabletamer.example.com)
+There is no public demo deployment configured in this repository at the moment.
 
 ## Features
 
@@ -57,28 +57,33 @@ A browser-based CSV visualization and transformation tool that converts raw CSV 
 ## Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/0xwulf/tabletamer.git
    cd tabletamer
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Set up environment variables:
    Create a `.env` file by copying the example:
+
    ```bash
    cp .env.example .env
    ```
+
    Modify the `.env` file with your desired settings. Key variables include:
-    - `DATABASE_URL`: Connection string for your PostgreSQL database (used by Drizzle ORM).
-    - `PORT`: The port on which the application will run (defaults to 5000).
-    - `LOG_FILE_PATH`: Path to the log file (defaults to `logs/tabletamer.log`).
-    - `NODE_ENV`: Set to `development` or `production`.
+   - `DATABASE_URL`: Connection string for your PostgreSQL database (used by Drizzle ORM).
+   - `PORT`: The port on which the application will run (defaults to 5000).
+   - `LOG_FILE_PATH`: Path to the log file (defaults to `logs/tabletamer.log`).
+   - `NODE_ENV`: Set to `development` or `production`.
 
 4. Start the development server:
+
    ```bash
    npm run dev
    ```
@@ -109,29 +114,32 @@ A browser-based CSV visualization and transformation tool that converts raw CSV 
 
 ### Keyboard Shortcuts
 
-| Action | Shortcut |
-|--------|----------|
-| Search | Ctrl + F |
-| Column Manager | Ctrl + M |
-| Next Page | → |
-| Previous Page | ← |
-| Export as CSV | Ctrl + E |
-| Toggle Theme | Ctrl + D |
+| Action                  | Shortcut |
+| ----------------------- | -------- |
+| Search                  | Ctrl + F |
+| Column Manager          | Ctrl + M |
+| Next Page               | →        |
+| Previous Page           | ←        |
+| Export as CSV           | Ctrl + E |
+| Toggle Theme            | Ctrl + D |
 | Show Keyboard Shortcuts | Ctrl + K |
 
 ## Future Roadmap
 
 ### Version 1.1.0 (Planned)
+
 - Column reordering via drag-and-drop
 - Advanced filtering options for specific column types
 - Column type detection with appropriate formatting
 
 ### Version 1.2.0 (Planned)
+
 - Basic data visualization (histograms, bar charts)
 - Summary statistics for numeric columns
 - Data transformation history with undo/redo
 
 ### Version 2.0.0 (Future)
+
 - Import from different file formats (Excel, JSON)
 - Custom column type definitions and validations
 - Collaborative editing via WebSockets

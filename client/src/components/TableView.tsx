@@ -23,7 +23,13 @@ import { Input } from "@/components/ui/input";
 import { useTableContext } from "@/context/TableContext";
 import { ColumnManager } from "./ColumnManager";
 import { CellEditor } from "./CellEditor";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function TableView() {
   const {
@@ -88,10 +94,10 @@ export function TableView() {
         if (headerCells[resizingColumn]) {
           const headerRect = headerCells[resizingColumn].getBoundingClientRect();
           const newWidth = Math.max(100, e.clientX - headerRect.left);
-          
-          setColumnWidths(prev => ({
+
+          setColumnWidths((prev) => ({
             ...prev,
-            [resizingColumn]: newWidth
+            [resizingColumn]: newWidth,
           }));
         }
       }
@@ -116,6 +122,9 @@ export function TableView() {
   // Edit cell
   const handleCellEdit = (rowIndex: number, column: string) => {
     const row = paginatedRows[rowIndex];
+    if (!row) {
+      return;
+    }
     setEditCell({
       rowIndex,
       column,
@@ -134,6 +143,7 @@ export function TableView() {
               <Search className="h-4 w-4 text-gray-400" />
             </div>
             <Input
+              id="table-search-input"
               type="text"
               placeholder="Search data..."
               className="pl-10"
@@ -150,11 +160,7 @@ export function TableView() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowColumnManager(true)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setShowColumnManager(true)}>
             <Rows3 className="h-4 w-4 mr-2" />
             Columns
           </Button>
@@ -167,12 +173,8 @@ export function TableView() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => exportData("csv")}>
-                Export as CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => exportData("json")}>
-                Export as JSON
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => exportData("csv")}>Export as CSV</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => exportData("json")}>Export as JSON</DropdownMenuItem>
               <DropdownMenuItem onClick={() => copyToClipboard()}>
                 Copy to clipboard
               </DropdownMenuItem>
@@ -189,21 +191,33 @@ export function TableView() {
       {/* Table container */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
-          <table ref={tableRef} className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table
+            ref={tableRef}
+            className="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+          >
             <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
               <tr>
                 {visibleColumns.map((column, columnIndex) => (
                   <th
                     key={column}
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap cursor-pointer group"
-                    style={{ width: columnWidths[columnIndex] ? `${columnWidths[columnIndex]}px` : undefined, position: 'relative' }}
+                    style={{
+                      width: columnWidths[columnIndex]
+                        ? `${columnWidths[columnIndex]}px`
+                        : undefined,
+                      position: "relative",
+                    }}
                     onClick={() => updateSort(column)}
+                    aria-sort={
+                      sortColumn !== column
+                        ? "none"
+                        : sortDirection === "asc"
+                          ? "ascending"
+                          : "descending"
+                    }
                   >
                     <div className="flex items-center relative">
-                      <span 
-                        className="max-w-xs truncate" 
-                        title={column}
-                      >
+                      <span className="max-w-xs truncate" title={column}>
                         {column}
                       </span>
 
@@ -238,10 +252,7 @@ export function TableView() {
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {paginatedRows.length > 0 ? (
                 paginatedRows.map((row, rowIndex) => (
-                  <tr
-                    key={rowIndex}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                  >
+                  <tr key={rowIndex} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                     {visibleColumns.map((column) => (
                       <td
                         key={`${rowIndex}-${column}`}
@@ -252,7 +263,7 @@ export function TableView() {
                           className={!row[column] ? "text-gray-400 dark:text-gray-500 italic" : ""}
                         >
                           {row[column] !== null && row[column] !== undefined
-                            ? row[column]
+                            ? String(row[column])
                             : ""}
                         </span>
                       </td>
@@ -308,7 +319,7 @@ export function TableView() {
               <p className="text-sm text-gray-700 dark:text-gray-300">
                 Showing{" "}
                 <span className="font-medium">
-                  {(currentPage - 1) * pageSize + 1}
+                  {filteredRowCount === 0 ? 0 : (currentPage - 1) * pageSize + 1}
                 </span>{" "}
                 to{" "}
                 <span className="font-medium">
@@ -318,9 +329,7 @@ export function TableView() {
               </p>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                Rows per page:
-              </span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Rows per page:</span>
               <Select
                 value={String(pageSize)}
                 onValueChange={(value) => updatePageSize(Number(value))}
@@ -336,7 +345,10 @@ export function TableView() {
                 </SelectContent>
               </Select>
 
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+              <nav
+                className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                aria-label="Pagination"
+              >
                 <Button
                   variant="outline"
                   size="icon"
@@ -395,9 +407,7 @@ export function TableView() {
       </div>
 
       {/* Modals */}
-      {showColumnManager && (
-        <ColumnManager onClose={() => setShowColumnManager(false)} />
-      )}
+      {showColumnManager && <ColumnManager onClose={() => setShowColumnManager(false)} />}
       {showCellEdit && <CellEditor onClose={() => setShowCellEdit(false)} />}
     </div>
   );

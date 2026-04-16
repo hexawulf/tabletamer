@@ -2,12 +2,76 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { useToast } from "@/hooks/use-toast";
 import Papa from "papaparse";
 
+type TableRow = Record<string, unknown>;
+const STORAGE_KEY = "tableTamerData";
+const DEFAULT_PAGE_SIZE = 25;
+const PAGE_SIZE_OPTIONS = new Set([10, 25, 50, 100]);
+
+const buildColumnVisibility = (columns: string[]) =>
+  columns.reduce(
+    (acc, column) => {
+      acc[column] = true;
+      return acc;
+    },
+    {} as Record<string, boolean>,
+  );
+
+const getVisibleColumns = (columns: string[], columnVisibility: Record<string, boolean>) =>
+  columns.filter((column) => columnVisibility[column] !== false);
+
+const getExportRows = (rows: TableRow[], visibleColumns: string[]) =>
+  rows.map((row) =>
+    visibleColumns.reduce((acc, column) => {
+      acc[column] = row[column];
+      return acc;
+    }, {} as TableRow),
+  );
+
+const downloadTextFile = (content: string, fileName: string, mimeType: string) => {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+const normalizeRows = (rows: unknown[]): TableRow[] =>
+  rows
+    .filter(
+      (row): row is Record<string, unknown> =>
+        !!row && typeof row === "object" && !Array.isArray(row),
+    )
+    .map((row) => {
+      const normalized = { ...row } as TableRow & { __parsed_extra?: unknown };
+      delete normalized.__parsed_extra;
+      return normalized;
+    });
+
+const getColumnsFromRows = (rows: TableRow[]) => {
+  const columnSet = new Set<string>();
+  rows.forEach((row) => {
+    Object.keys(row).forEach((key) => {
+      if (key.trim()) {
+        columnSet.add(key);
+      }
+    });
+  });
+  return Array.from(columnSet);
+};
+
+const getBaseFileName = (fileName: string) =>
+  (fileName.trim() || "table-data").replace(/\.[^.]+$/, "");
+
 interface TableData {
-  data: any[];
+  data: TableRow[];
   columns: string[];
   columnVisibility: Record<string, boolean>;
   visibleColumns: string[];
-  filteredRows: any[];
+  filteredRows: TableRow[];
   currentPage: number;
   pageSize: number;
   sortColumn: string | null;
@@ -38,12 +102,12 @@ interface TableContextType extends TableData {
   exportData: (format: "csv" | "json") => void;
   copyToClipboard: () => void;
   totalPages: number;
-  paginatedRows: any[];
+  paginatedRows: TableRow[];
   totalRowCount: number;
   filteredRowCount: number;
   setEditCell: (edit: CellEdit) => void;
   editingCell: CellEdit;
-  transformCellValue: (type: "upper" | "lower" | "title" | "clear") => void;
+  transformCellValue: (type: "upper" | "lower" | "title" | "clear", value: string) => string;
 }
 
 const TableContext = createContext<TableContextType | undefined>(undefined);
@@ -62,7 +126,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
     visibleColumns: [],
     filteredRows: [],
     currentPage: 1,
-    pageSize: 25,
+    pageSize: DEFAULT_PAGE_SIZE,
     sortColumn: null,
     sortDirection: "asc",
     searchQuery: "",
@@ -82,61 +146,72 @@ export function TableProvider({ children }: { children: ReactNode }) {
   const totalRowCount = tableData.data.length;
   const filteredRowCount = tableData.filteredRows.length;
   const totalPages = Math.max(1, Math.ceil(filteredRowCount / tableData.pageSize));
-  
+
   const paginatedRows = tableData.filteredRows.slice(
     (tableData.currentPage - 1) * tableData.pageSize,
-    tableData.currentPage * tableData.pageSize
+    tableData.currentPage * tableData.pageSize,
   );
 
   // Load from localStorage on mount
   useEffect(() => {
-    const savedData = localStorage.getItem("tableTamerData");
+    const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
       try {
         const parsedData = JSON.parse(savedData);
-        
+        const data = normalizeRows(Array.isArray(parsedData?.data) ? parsedData.data : []);
+        if (data.length === 0) {
+          localStorage.removeItem(STORAGE_KEY);
+          return;
+        }
+
+        const columns: string[] =
+          Array.isArray(parsedData?.columns) && parsedData.columns.length > 0
+            ? parsedData.columns.filter(
+                (column: unknown): column is string =>
+                  typeof column === "string" && column.trim().length > 0,
+              )
+            : getColumnsFromRows(data);
+        const sortColumn =
+          typeof parsedData?.sortColumn === "string" && columns.includes(parsedData.sortColumn)
+            ? parsedData.sortColumn
+            : null;
+        const sortDirection = parsedData?.sortDirection === "desc" ? "desc" : "asc";
+        const pageSize =
+          typeof parsedData?.pageSize === "number" && PAGE_SIZE_OPTIONS.has(parsedData.pageSize)
+            ? parsedData.pageSize
+            : DEFAULT_PAGE_SIZE;
+        const columnVisibility: Record<string, boolean> = {};
+        columns.forEach((column) => {
+          columnVisibility[column] =
+            parsedData?.columnVisibility?.[column] === false ? false : true;
+        });
+        const visibleColumns = getVisibleColumns(columns, columnVisibility);
+        const filteredRows = sortRows(data, sortColumn, sortDirection);
+
         setTableData((prev) => ({
           ...prev,
-          data: parsedData.data || [],
-          columns: parsedData.columns || [],
-          columnVisibility: parsedData.columnVisibility || {},
-          visibleColumns: Object.keys(parsedData.columnVisibility || {}).filter(
-            (col) => parsedData.columnVisibility[col]
-          ),
-          fileName: parsedData.fileName || "",
-          sortColumn: parsedData.sortColumn || null,
-          sortDirection: parsedData.sortDirection || "asc",
-          pageSize: parsedData.pageSize || 25,
-          hasData: (parsedData.data?.length || 0) > 0,
+          data,
+          columns,
+          columnVisibility,
+          visibleColumns: visibleColumns.length > 0 ? visibleColumns : columns,
+          filteredRows,
+          fileName: typeof parsedData?.fileName === "string" ? parsedData.fileName : "",
+          sortColumn,
+          sortDirection,
+          pageSize,
+          hasData: true,
         }));
 
-        // Apply any sorting and filtering
-        setTimeout(() => {
-          if (parsedData.data?.length) {
-            setTableData((prev) => {
-              const filtered = filterRows(parsedData.data, prev.searchQuery);
-              const sorted = sortRows(
-                filtered,
-                prev.sortColumn,
-                prev.sortDirection
-              );
-              return {
-                ...prev,
-                filteredRows: sorted,
-              };
-            });
-          }
-        }, 0);
-        
         toast({
           title: "Data restored",
           description: "Previous session data has been loaded",
         });
       } catch (error) {
         console.error("Error loading data from localStorage:", error);
+        localStorage.removeItem(STORAGE_KEY);
       }
     }
-  }, []);
+  }, [toast]);
 
   // Save to localStorage when data changes
   useEffect(() => {
@@ -150,9 +225,18 @@ export function TableProvider({ children }: { children: ReactNode }) {
         sortDirection: tableData.sortDirection,
         pageSize: tableData.pageSize,
       };
-      localStorage.setItem("tableTamerData", JSON.stringify(dataToSave));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
     }
-  }, [tableData.data, tableData.columnVisibility, tableData.sortColumn, tableData.sortDirection, tableData.pageSize, tableData.hasData]);
+  }, [
+    tableData.data,
+    tableData.columnVisibility,
+    tableData.sortColumn,
+    tableData.sortDirection,
+    tableData.pageSize,
+    tableData.hasData,
+  ]);
 
   // Helper functions
   /**
@@ -161,18 +245,16 @@ export function TableProvider({ children }: { children: ReactNode }) {
    * @param query Search query string
    * @returns Filtered array of rows that match the query
    */
-  const filterRows = (rows: any[], query: string) => {
+  const filterRows = (rows: TableRow[], query: string) => {
     if (!query.trim()) {
       return [...rows];
     }
-    
+
     const lowerQuery = query.toLowerCase().trim();
     return rows.filter((row) => {
       return Object.values(row).some(
-        (value) => 
-          value !== null && 
-          value !== undefined && 
-          String(value).toLowerCase().includes(lowerQuery)
+        (value) =>
+          value !== null && value !== undefined && String(value).toLowerCase().includes(lowerQuery),
       );
     });
   };
@@ -184,7 +266,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
    * @param direction Sort direction ("asc" or "desc")
    * @returns Sorted array of rows
    */
-  const sortRows = (rows: any[], column: string | null, direction: "asc" | "desc") => {
+  const sortRows = (rows: TableRow[], column: string | null, direction: "asc" | "desc") => {
     if (!column) return rows;
 
     return [...rows].sort((a, b) => {
@@ -207,9 +289,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       // Fall back to string comparison
       const strA = String(valueA).toLowerCase();
       const strB = String(valueB).toLowerCase();
-      return direction === "asc"
-        ? strA.localeCompare(strB)
-        : strB.localeCompare(strA);
+      return direction === "asc" ? strA.localeCompare(strB) : strB.localeCompare(strA);
     });
   };
 
@@ -220,10 +300,23 @@ export function TableProvider({ children }: { children: ReactNode }) {
    * @returns Promise that resolves when the file is loaded and parsed
    */
   const loadCSV = async (file: File): Promise<void> => {
-    if (!file || !file.name.endsWith(".csv")) {
+    const lowerName = file?.name?.toLowerCase() ?? "";
+    const isCsvFile =
+      lowerName.endsWith(".csv") ||
+      file.type === "text/csv" ||
+      file.type === "application/vnd.ms-excel";
+    if (!file || !isCsvFile) {
       toast({
         title: "Invalid file",
         description: "Please select a CSV file",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (file.size === 0) {
+      toast({
+        title: "Empty file",
+        description: "The selected CSV file is empty",
         variant: "destructive",
       });
       return;
@@ -232,35 +325,41 @@ export function TableProvider({ children }: { children: ReactNode }) {
     setTableData((prev) => ({ ...prev, isLoading: true, fileName: file.name }));
 
     try {
-      const result = await new Promise<Papa.ParseResult<any>>((resolve, reject) => {
+      const result = await new Promise<Papa.ParseResult<TableRow>>((resolve, reject) => {
         Papa.parse(file, {
           header: true,
           skipEmptyLines: true,
           dynamicTyping: true,
-          complete: resolve,
+          complete: (parseResult) => {
+            if (parseResult.errors.length > 0) {
+              reject(new Error(parseResult.errors[0].message));
+              return;
+            }
+            resolve(parseResult as Papa.ParseResult<TableRow>);
+          },
           error: reject,
         });
       });
 
-      if (result.data.length === 0) {
+      const data = normalizeRows(result.data);
+      const columns = getColumnsFromRows(data);
+      if (data.length === 0 || columns.length === 0) {
         throw new Error("No data found in CSV file");
       }
-
-      const columns = Object.keys(result.data[0]);
-      const columnVisibility = columns.reduce((acc, column) => {
-        acc[column] = true;
-        return acc;
-      }, {} as Record<string, boolean>);
+      const columnVisibility = buildColumnVisibility(columns);
 
       setTableData((prev) => {
-        const newState = {
+        const newState: TableData = {
           ...prev,
-          data: result.data,
+          data,
           columns,
           columnVisibility,
           visibleColumns: columns,
-          filteredRows: result.data,
+          filteredRows: data,
           currentPage: 1,
+          searchQuery: "",
+          sortColumn: null,
+          sortDirection: "asc",
           hasData: true,
           isLoading: false,
         };
@@ -291,22 +390,32 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
     // Generate example data
     try {
-      const columns = ["id", "first_name", "last_name", "email", "gender", "ip_address", "date", "amount"];
+      const columns = [
+        "id",
+        "first_name",
+        "last_name",
+        "email",
+        "gender",
+        "ip_address",
+        "date",
+        "amount",
+      ];
       const data = Array.from({ length: 150 }, (_, i) => ({
         id: i + 1,
-        first_name: ["John", "Jane", "Robert", "Emily", "Michael", "Sarah"][Math.floor(Math.random() * 6)],
-        last_name: ["Smith", "Johnson", "Williams", "Brown", "Jones", "Miller"][Math.floor(Math.random() * 6)],
+        first_name: ["John", "Jane", "Robert", "Emily", "Michael", "Sarah"][
+          Math.floor(Math.random() * 6)
+        ],
+        last_name: ["Smith", "Johnson", "Williams", "Brown", "Jones", "Miller"][
+          Math.floor(Math.random() * 6)
+        ],
         email: `example${i + 1}@example.com`,
         gender: ["Male", "Female"][Math.floor(Math.random() * 2)],
         ip_address: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
         date: `${2023 - Math.floor(Math.random() * 3)}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, "0")}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, "0")}`,
-        amount: `$${(Math.random() * 1000).toFixed(2)}`
+        amount: `$${(Math.random() * 1000).toFixed(2)}`,
       }));
 
-      const columnVisibility = columns.reduce((acc, column) => {
-        acc[column] = true;
-        return acc;
-      }, {} as Record<string, boolean>);
+      const columnVisibility = buildColumnVisibility(columns);
 
       setTableData({
         data,
@@ -315,7 +424,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
         visibleColumns: columns,
         filteredRows: data,
         currentPage: 1,
-        pageSize: 25,
+        pageSize: DEFAULT_PAGE_SIZE,
         sortColumn: null,
         sortDirection: "asc",
         searchQuery: "",
@@ -343,7 +452,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
    * Also removes data from localStorage
    */
   const clearData = () => {
-    localStorage.removeItem("tableTamerData");
+    localStorage.removeItem(STORAGE_KEY);
     setTableData(initialTableData);
     toast({
       title: "Data cleared",
@@ -353,26 +462,50 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
   const toggleColumnVisibility = (column: string) => {
     setTableData((prev) => {
+      if (!prev.columnVisibility[column]) {
+        const newVisibility = {
+          ...prev.columnVisibility,
+          [column]: true,
+        };
+        return {
+          ...prev,
+          columnVisibility: newVisibility,
+          visibleColumns: getVisibleColumns(prev.columns, newVisibility),
+        };
+      }
+
+      if (prev.visibleColumns.length <= 1) {
+        toast({
+          title: "At least one column is required",
+          description: "Keep one column visible so the table remains usable.",
+          variant: "destructive",
+        });
+        return prev;
+      }
+
       const newVisibility = {
         ...prev.columnVisibility,
         [column]: !prev.columnVisibility[column],
       };
-      
+
       return {
         ...prev,
         columnVisibility: newVisibility,
-        visibleColumns: prev.columns.filter((col) => newVisibility[col]),
+        visibleColumns: getVisibleColumns(prev.columns, newVisibility),
       };
     });
   };
 
   const resetColumnVisibility = () => {
     setTableData((prev) => {
-      const newVisibility = prev.columns.reduce((acc, column) => {
-        acc[column] = true;
-        return acc;
-      }, {} as Record<string, boolean>);
-      
+      const newVisibility = prev.columns.reduce(
+        (acc, column) => {
+          acc[column] = true;
+          return acc;
+        },
+        {} as Record<string, boolean>,
+      );
+
       return {
         ...prev,
         columnVisibility: newVisibility,
@@ -383,19 +516,11 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
   const updateSort = (column: string) => {
     setTableData((prev) => {
-      const direction = 
-        prev.sortColumn === column
-          ? prev.sortDirection === "asc"
-            ? "desc"
-            : "asc"
-          : "asc";
-      
-      const filteredRows = sortRows(
-        prev.filteredRows,
-        column,
-        direction
-      );
-      
+      const direction =
+        prev.sortColumn === column ? (prev.sortDirection === "asc" ? "desc" : "asc") : "asc";
+
+      const filteredRows = sortRows(prev.filteredRows, column, direction);
+
       return {
         ...prev,
         sortColumn: column,
@@ -409,7 +534,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
     setTableData((prev) => {
       const filtered = filterRows(prev.data, query);
       const sorted = sortRows(filtered, prev.sortColumn, prev.sortDirection);
-      
+
       return {
         ...prev,
         searchQuery: query,
@@ -420,9 +545,10 @@ export function TableProvider({ children }: { children: ReactNode }) {
   };
 
   const updatePageSize = (size: number) => {
+    const nextPageSize = PAGE_SIZE_OPTIONS.has(size) ? size : DEFAULT_PAGE_SIZE;
     setTableData((prev) => ({
       ...prev,
-      pageSize: size,
+      pageSize: nextPageSize,
       currentPage: 1,
     }));
   };
@@ -430,7 +556,10 @@ export function TableProvider({ children }: { children: ReactNode }) {
   const updateCurrentPage = (page: number) => {
     setTableData((prev) => ({
       ...prev,
-      currentPage: Math.max(1, Math.min(page, totalPages)),
+      currentPage: Math.max(
+        1,
+        Math.min(page, Math.max(1, Math.ceil(prev.filteredRows.length / prev.pageSize))),
+      ),
     }));
   };
 
@@ -438,31 +567,34 @@ export function TableProvider({ children }: { children: ReactNode }) {
     setTableData((prev) => {
       // Get the actual row index from the filtered data
       const dataIndex = (prev.currentPage - 1) * prev.pageSize + rowIndex;
-      
-      // Update the filtered rows
-      const updatedFilteredRows = [...prev.filteredRows];
-      updatedFilteredRows[dataIndex] = {
-        ...updatedFilteredRows[dataIndex],
+      const originalRow = prev.filteredRows[dataIndex];
+      if (!originalRow) {
+        return prev;
+      }
+
+      const originalIndex = prev.data.indexOf(originalRow);
+      if (originalIndex === -1) {
+        return prev;
+      }
+
+      const updatedRow = {
+        ...originalRow,
         [column]: value,
       };
-      
-      // Find and update the corresponding row in the original data
-      const originalIndex = prev.data.findIndex(
-        (row) => JSON.stringify(row) === JSON.stringify(prev.filteredRows[dataIndex])
+      const updatedData = [...prev.data];
+      updatedData[originalIndex] = updatedRow;
+      const filteredRows = sortRows(
+        filterRows(updatedData, prev.searchQuery),
+        prev.sortColumn,
+        prev.sortDirection,
       );
-      
-      let updatedData = [...prev.data];
-      if (originalIndex !== -1) {
-        updatedData[originalIndex] = {
-          ...updatedData[originalIndex],
-          [column]: value,
-        };
-      }
-      
+      const maxPage = Math.max(1, Math.ceil(filteredRows.length / prev.pageSize));
+
       return {
         ...prev,
         data: updatedData,
-        filteredRows: updatedFilteredRows,
+        filteredRows,
+        currentPage: Math.min(prev.currentPage, maxPage),
       };
     });
   };
@@ -471,20 +603,18 @@ export function TableProvider({ children }: { children: ReactNode }) {
    * Transforms the value of the currently editing cell
    * @param type The type of transformation to apply
    */
-  const transformCellValue = (type: "upper" | "lower" | "title" | "clear") => {
-    if (editingCell.value === null) return;
-    
-    let newValue: string;
-    
+  const transformCellValue = (type: "upper" | "lower" | "title" | "clear", value: string) => {
+    let newValue = value;
+
     switch (type) {
       case "upper":
-        newValue = editingCell.value.toUpperCase();
+        newValue = value.toUpperCase();
         break;
       case "lower":
-        newValue = editingCell.value.toLowerCase();
+        newValue = value.toLowerCase();
         break;
       case "title":
-        newValue = editingCell.value
+        newValue = value
           .toLowerCase()
           .split(" ")
           .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -494,13 +624,10 @@ export function TableProvider({ children }: { children: ReactNode }) {
         newValue = "";
         break;
       default:
-        newValue = editingCell.value;
+        newValue = value;
     }
-    
-    setEditCell({
-      ...editingCell,
-      value: newValue,
-    });
+
+    return newValue;
   };
 
   /**
@@ -509,49 +636,24 @@ export function TableProvider({ children }: { children: ReactNode }) {
    */
   const exportData = (format: "csv" | "json") => {
     if (!tableData.hasData) return;
-    
+
     try {
-      let content: string;
-      let fileName: string;
-      let mimeType: string;
-      
+      const dataToExport = getExportRows(tableData.filteredRows, tableData.visibleColumns);
+      const baseFileName = getBaseFileName(tableData.fileName);
       if (format === "csv") {
-        // Filter only visible columns if needed
-        const dataToExport = tableData.filteredRows.map((row) => {
-          const filtered: Record<string, any> = {};
-          tableData.visibleColumns.forEach((col) => {
-            filtered[col] = row[col];
-          });
-          return filtered;
-        });
-        
-        content = Papa.unparse(dataToExport);
-        fileName = `${tableData.fileName.replace(".csv", "")}_export.csv`;
-        mimeType = "text/csv;charset=utf-8;";
+        downloadTextFile(
+          Papa.unparse(dataToExport),
+          `${baseFileName}_export.csv`,
+          "text/csv;charset=utf-8;",
+        );
       } else {
-        const dataToExport = tableData.filteredRows.map((row) => {
-          const filtered: Record<string, any> = {};
-          tableData.visibleColumns.forEach((col) => {
-            filtered[col] = row[col];
-          });
-          return filtered;
-        });
-        
-        content = JSON.stringify(dataToExport, null, 2);
-        fileName = `${tableData.fileName.replace(".csv", "")}_export.json`;
-        mimeType = "application/json;charset=utf-8;";
+        downloadTextFile(
+          JSON.stringify(dataToExport, null, 2),
+          `${baseFileName}_export.json`,
+          "application/json;charset=utf-8;",
+        );
       }
-      
-      // Create a download link
-      const blob = new Blob([content], { type: mimeType });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
+
       toast({
         title: "Export successful",
         description: `Data exported as ${format.toUpperCase()}`,
@@ -571,20 +673,24 @@ export function TableProvider({ children }: { children: ReactNode }) {
    */
   const copyToClipboard = async () => {
     if (!tableData.hasData) return;
-    
+
     try {
-      // Extract only visible columns
-      const dataToExport = tableData.filteredRows.map((row) => {
-        const filtered: Record<string, any> = {};
-        tableData.visibleColumns.forEach((col) => {
-          filtered[col] = row[col];
-        });
-        return filtered;
-      });
-      
+      const dataToExport = getExportRows(tableData.filteredRows, tableData.visibleColumns);
       const text = JSON.stringify(dataToExport, null, 2);
-      await navigator.clipboard.writeText(text);
-      
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.setAttribute("readonly", "true");
+        textArea.style.position = "absolute";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+
       toast({
         title: "Copied to clipboard",
         description: "Table data copied to clipboard",
@@ -621,9 +727,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
     transformCellValue,
   };
 
-  return (
-    <TableContext.Provider value={contextValue}>{children}</TableContext.Provider>
-  );
+  return <TableContext.Provider value={contextValue}>{children}</TableContext.Provider>;
 }
 
 export const useTableContext = () => {

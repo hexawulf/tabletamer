@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -22,7 +22,7 @@ export function AboutModal({ onClose }: AboutModalProps) {
             A browser-based CSV visualization and transformation tool
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-primary">TableTamer v1.0.0</h2>
@@ -33,9 +33,9 @@ export function AboutModal({ onClose }: AboutModalProps) {
         <div className="space-y-2">
           <h3 className="font-medium text-lg">Overview</h3>
           <p>
-            TableTamer is a browser-based CSV visualization and transformation tool 
-            that converts raw CSV data into beautiful, interactive tables. The application
-            is fully client-side with no backend requirements.
+            TableTamer is a browser-based CSV visualization and transformation tool that converts
+            raw CSV data into beautiful, interactive tables. The application primarily runs in the
+            browser, with a lightweight server wrapper for delivery.
           </p>
         </div>
 
@@ -55,18 +55,17 @@ export function AboutModal({ onClose }: AboutModalProps) {
 
         <div className="space-y-2">
           <h3 className="font-medium text-lg">Technology</h3>
-          <p className="text-sm">
-            Built with React, TailwindCSS, PapaParse, and FileSaver.js.
-          </p>
+          <p className="text-sm">Built with React, TailwindCSS, PapaParse, and FileSaver.js.</p>
         </div>
 
         <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
           <h3 className="font-medium text-sm">Contact</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Author: 0xWulf</p>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Author: 0xWulf
-          </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Email: <a href="mailto:dev@0xwulf.dev" className="text-blue-600 hover:underline">dev@0xwulf.dev</a>
+            Email:{" "}
+            <a href="mailto:dev@0xwulf.dev" className="text-blue-600 hover:underline">
+              dev@0xwulf.dev
+            </a>
           </p>
         </div>
 

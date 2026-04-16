@@ -11,54 +11,75 @@ export function useKeyboardShortcuts({
   onShowColumnManager,
   onShowKeyboardShortcuts,
 }: UseKeyboardShortcutsProps) {
-  const {
-    hasData,
-    updateCurrentPage,
-    currentPage,
-    totalPages,
-    exportData,
-    updateSearch,
-  } = useTableContext();
+  const { hasData, updateCurrentPage, currentPage, totalPages, exportData, updateSearch } =
+    useTableContext();
   const { setTheme, theme } = useTheme();
 
   useEffect(() => {
+    const isTypingTarget = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) {
+        return false;
+      }
+
+      const tagName = target.tagName.toLowerCase();
+      return (
+        target.isContentEditable ||
+        tagName === "input" ||
+        tagName === "textarea" ||
+        tagName === "select"
+      );
+    };
+
     const handleKeyDown = (event: KeyboardEvent) => {
+      const shortcutKey = event.ctrlKey || event.metaKey;
+      const key = event.key.toLowerCase();
+      const typingTarget = isTypingTarget(event.target);
+
       // Only handle shortcuts if data is loaded (except for keyboard shortcut dialog)
-      if (!hasData && !(event.ctrlKey && event.key === "k")) return;
+      if (!hasData && !(shortcutKey && key === "k")) return;
 
       // Ctrl + F for search
-      if (event.ctrlKey && event.key === "f") {
+      if (shortcutKey && key === "f") {
         event.preventDefault();
         const searchInput = document.querySelector(
-          'input[placeholder="Search data..."]'
+          'input[placeholder="Search data..."]',
         ) as HTMLInputElement;
         if (searchInput) {
           searchInput.focus();
         }
+        return;
+      }
+
+      if (typingTarget) {
+        return;
       }
 
       // Ctrl + M for column manager
-      if (event.ctrlKey && event.key === "m") {
+      if (shortcutKey && key === "m") {
         event.preventDefault();
         onShowColumnManager();
+        return;
       }
 
       // Ctrl + E for export
-      if (event.ctrlKey && event.key === "e") {
+      if (shortcutKey && key === "e") {
         event.preventDefault();
         exportData("csv");
+        return;
       }
 
       // Ctrl + D for dark mode toggle
-      if (event.ctrlKey && event.key === "d") {
+      if (shortcutKey && key === "d") {
         event.preventDefault();
         setTheme(theme === "dark" ? "light" : "dark");
+        return;
       }
 
       // Ctrl + K for keyboard shortcuts
-      if (event.ctrlKey && event.key === "k") {
+      if (shortcutKey && key === "k") {
         event.preventDefault();
         onShowKeyboardShortcuts();
+        return;
       }
 
       // Arrow keys for pagination
@@ -71,7 +92,7 @@ export function useKeyboardShortcuts({
       }
 
       // Escape to clear filters
-      if (event.key === "Escape" && hasData) {
+      if (key === "escape" && hasData) {
         updateSearch("");
       }
     };

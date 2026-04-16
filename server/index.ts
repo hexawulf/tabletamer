@@ -7,25 +7,32 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import logger from "./src/logger";
 
-logger.info('✅ Winston logger initialized – startup check');
+logger.info("✅ Winston logger initialized – startup check");
 
 const app = express();
+const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 // Compression middleware - compress all responses (level 6 is balanced for Pi)
 app.use(compression({ level: 6, threshold: 1024 }));
 
 // Security headers via Helmet
-app.use(helmet({
-  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
-  crossOriginEmbedderPolicy: false, // Allow Vite HMR in dev
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: process.env.NODE_ENV === "production" ? undefined : false,
+    crossOriginEmbedderPolicy: false, // Allow Vite HMR in dev
+  }),
+);
 
 // CORS configuration
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
-app.use(cors({
-  origin: allowedOrigins.length > 0 ? allowedOrigins : true,
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+    credentials: true,
+  }),
+);
 
 // Rate limiting for API routes
 const apiLimiter = rateLimit({
@@ -33,13 +40,13 @@ const apiLimiter = rateLimit({
   max: 100, // Limit each IP to 100 requests per windowMs
   standardHeaders: true,
   legacyHeaders: false,
-  message: 'Too many requests from this IP, please try again later.',
+  message: "Too many requests from this IP, please try again later.",
 });
 
-app.use('/api/', apiLimiter);
+app.use("/api/", apiLimiter);
 
 // Body parsing middleware
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
@@ -79,8 +86,12 @@ app.use((req, res, next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
+    logger.error("Unhandled request error", {
+      status,
+      message,
+      stack: err?.stack,
+    });
     res.status(status).json({ message });
-    throw err;
   });
 
   // importantly only setup vite in development and after
@@ -96,11 +107,20 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = process.env.PORT || 5000;
-  server.listen({
-    port: Number(port),
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
+  server.listen(
+    {
+      port: Number(port),
+      host: "0.0.0.0",
+      reusePort: true,
+    },
+    () => {
+      log(`serving on port ${port}`);
+    },
+  );
+})().catch((error) => {
+  logger.error("Failed to start server", {
+    message: error instanceof Error ? error.message : String(error),
+    stack: error instanceof Error ? error.stack : undefined,
   });
-})();
+  process.exit(1);
+});

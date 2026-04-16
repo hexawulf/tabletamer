@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { FileUpload } from "@/components/FileUpload";
@@ -23,7 +23,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
+
       <main className="flex-1 relative overflow-y-auto focus:outline-none">
         <div className="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
@@ -32,9 +32,7 @@ export default function Home() {
                 <div className="inline-block animate-spin">
                   <Squircle className="h-12 w-12 text-primary" />
                 </div>
-                <p className="mt-4 text-gray-600 dark:text-gray-400">
-                  Processing your file...
-                </p>
+                <p className="mt-4 text-gray-600 dark:text-gray-400">Processing your file...</p>
               </div>
             </div>
           ) : !hasData ? (
@@ -44,13 +42,11 @@ export default function Home() {
           )}
         </div>
       </main>
-      
+
       <Footer />
 
-      {showColumnManager && (
-        <ColumnManager onClose={() => setShowColumnManager(false)} />
-      )}
-      
+      {showColumnManager && <ColumnManager onClose={() => setShowColumnManager(false)} />}
+
       {showKeyboardShortcuts && (
         <KeyboardShortcuts onClose={() => setShowKeyboardShortcuts(false)} />
       )}

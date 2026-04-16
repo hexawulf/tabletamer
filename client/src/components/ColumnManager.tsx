@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { GripVertical } from "lucide-react";
 import { useTableContext } from "@/context/TableContext";
 
 interface ColumnManagerProps {
@@ -15,7 +14,8 @@ interface ColumnManagerProps {
 }
 
 export function ColumnManager({ onClose }: ColumnManagerProps) {
-  const { columns, columnVisibility, toggleColumnVisibility, resetColumnVisibility } = useTableContext();
+  const { columns, columnVisibility, toggleColumnVisibility, resetColumnVisibility } =
+    useTableContext();
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -25,7 +25,7 @@ export function ColumnManager({ onClose }: ColumnManagerProps) {
         </DialogHeader>
         <div className="mt-2">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Select which columns to display. Drag and drop to reorder.
+            Select which columns to display in the table.
           </p>
 
           <div className="mt-4 max-h-96 overflow-y-auto">
@@ -48,9 +48,6 @@ export function ColumnManager({ onClose }: ColumnManagerProps) {
                       {column}
                     </label>
                   </div>
-                  <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                    <GripVertical className="h-4 w-4" />
-                  </button>
                 </li>
               ))}
             </ul>
