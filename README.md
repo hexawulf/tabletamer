@@ -1,166 +1,234 @@
-# TableTamer
+# 📊 TableTamer
 
-A browser-based CSV visualization and transformation tool that converts raw CSV data into beautiful, interactive tables. TableTamer helps users quickly analyze, manipulate, and transform tabular data without requiring any back-end services.
+TableTamer is a polished CSV workbench for the browser. Drop in a CSV file and it turns into a searchable, sortable, editable table with column controls, pagination, theme support, clipboard export, and local session persistence.
 
 ![TableTamer Screenshot](screenshots/tabletamer.png)
 
-## Live Demo
+## ✨ Current State
 
-There is no public demo deployment configured in this repository at the moment.
+TableTamer is currently a client-first React application served by a lightweight Express wrapper.
 
-## Features
+What works today:
 
-- **File Handling**
-  - Drag-and-drop CSV file upload zone with visual feedback
-  - Traditional file input as fallback for older browsers
-  - Loading indicators during file processing
-  - Support for large CSV files with graceful handling
-  - Example data option for quick testing
+- 📂 Drag-and-drop CSV upload
+- 🧪 Example dataset loading
+- 🔎 Global table search
+- ↕️ Column sorting
+- ↔️ Column resizing
+- 👁️ Column visibility management
+- ✍️ Inline cell editing
+- 🔤 Cell text transforms: uppercase, lowercase, title case, clear
+- 📄 Pagination with configurable page sizes
+- 💾 Session restore via `localStorage`
+- 📤 Export filtered visible data as CSV or JSON
+- 📋 Copy filtered visible data to clipboard
+- 🌗 Light and dark theme toggle
+- ⌨️ Keyboard shortcuts for common actions
+- 🛡️ Error boundary protection in the UI
+- 🚦 Production server protections such as Helmet, compression, CORS, and rate limiting
 
-- **Interactive Table Display**
-  - Responsive, interactive table with fixed headers
-  - Pagination with configurable page size (10, 25, 50, 100 rows)
-  - Column sorting (ascending/descending) with visual indicators
-  - Column resizing via drag handles
-  - Inline cell editing with one-click access
+What it is not today:
 
-- **Data Manipulation**
-  - Global search functionality across all columns
-  - Column visibility toggle with easy management
-  - Text transformations (UPPERCASE, lowercase, Title Case)
-  - Cell value editing with validation
-  - Data persistence between sessions using localStorage
+- It is not a multi-user or collaborative system.
+- It does not currently expose a meaningful public API.
+- It includes database-related packages and scaffolding, but the active app flow is centered on in-browser CSV handling.
 
-- **Export Functionality**
-  - Export to CSV with proper escaping and formatting
-  - Export to JSON with configurable options
-  - Copy to clipboard functionality for quick sharing
-  - Export filtered/visible data only option
+## 🧱 Architecture
 
-- **User Experience**
-  - Light/dark mode toggle with system preference detection
-  - Clean, intuitive UI with proper spacing and typography
-  - Helpful tooltips and informative empty states
-  - Keyboard shortcuts for power users
-  - Error boundaries for graceful error handling
+The repository is split into a small server layer and a browser app:
 
-## Technology Stack
+- `client/`: React SPA built with Vite
+- `server/`: Express server for production delivery and middleware
+- `shared/`: shared TypeScript schema/types
+- `public/`: favicons and static site assets
+- `screenshots/`: project screenshots used in docs
 
-- **Frontend Framework**: React 18 with functional components and hooks
-- **Styling**: TailwindCSS with shadcn/ui components for consistent UI
-- **CSV Handling**: PapaParse for robust CSV parsing and generation
-- **File Handling**: FileSaver.js for client-side file saving
-- **State Management**: React Context API for global application state
-- **Build Tools**: Vite for fast development and optimized production builds
-- **Type Safety**: TypeScript for better developer experience and code quality
+The app’s core state lives in `client/src/context/TableContext.tsx`, which owns CSV ingestion, filtering, sorting, pagination, editing, exports, clipboard behavior, and persisted session restore.
 
-## Installation
+## 🛠️ Full Tech Stack
 
-1. Clone the repository:
+### Frontend
 
-   ```bash
-   git clone https://github.com/0xwulf/tabletamer.git
-   cd tabletamer
-   ```
+- ⚛️ React 18
+- 🧠 TypeScript
+- ⚡ Vite 7
+- 🧭 Wouter for routing
+- 📊 TanStack Table for table mechanics
+- 🔄 TanStack Query installed for async/query infrastructure
+- 🎨 Tailwind CSS
+- 🧩 shadcn/ui style component architecture
+- 🧱 Radix UI primitives
+- 🌙 `next-themes` for theme management
+- 🖼️ Lucide React icons
 
-2. Install dependencies:
+### Data Handling
 
-   ```bash
-   npm install
-   ```
+- 🧾 PapaParse for CSV parsing and CSV export generation
+- 💽 Browser `localStorage` for session persistence
+- 📋 Clipboard API with fallback support for copy operations
 
-3. Set up environment variables:
-   Create a `.env` file by copying the example:
+### Server / Runtime
 
-   ```bash
-   cp .env.example .env
-   ```
+- 🚂 Express 4
+- 🗜️ `compression`
+- 🪖 `helmet`
+- 🌐 `cors`
+- 🚥 `express-rate-limit`
+- 🪵 Winston logging
+- 🔧 `tsx` for local development runtime
+- 📦 `esbuild` for bundling the production server entry
 
-   Modify the `.env` file with your desired settings. Key variables include:
-   - `DATABASE_URL`: Connection string for your PostgreSQL database (used by Drizzle ORM).
-   - `PORT`: The port on which the application will run (defaults to 5000).
-   - `LOG_FILE_PATH`: Path to the log file (defaults to `logs/tabletamer.log`).
-   - `NODE_ENV`: Set to `development` or `production`.
+### Deployment / Ops
 
-4. Start the development server:
+- ♻️ PM2 ecosystem config included for process management
+- 🐧 Node.js 18+ supported
+- 🧰 Husky + lint-staged configured for local workflow hygiene
 
-   ```bash
-   npm run dev
-   ```
+### Additional Installed Packages
 
-5. Open your browser to the URL shown in the terminal (typically http://localhost:PORT, where PORT is the value from your .env or 5000 by default).
+The repository also includes packages for forms, validation, charts, sessions, Drizzle ORM, and other UI primitives. Some of these are currently unused in the active CSV workflow, but they are present in the repo and may support future work.
 
-## Usage Guide
+## 🚀 Getting Started
 
-### Importing Data
+### 1. Clone the repo
 
-- **Upload CSV**: Drag and drop a CSV file onto the upload zone or click to select a file
-- **Example Data**: Click "Try with example data" to load sample data for testing
+```bash
+git clone https://github.com/hexawulf/tabletamer.git
+cd tabletamer
+```
 
-### Working with Table Data
+### 2. Install dependencies
 
-- **Sort Columns**: Click on column headers to sort (click again to reverse sort order)
-- **Filter Data**: Use the search box to filter across all columns
-- **Manage Columns**: Click the "Columns" button to show/hide specific columns
-- **Edit Cells**: Click on any cell to edit its content
-- **Resize Columns**: Drag the divider between column headers to resize
+```bash
+npm install
+```
 
-### Exporting Data
+### 3. Configure environment variables
 
-- **Export Options**: Click the "Export" button to see available export formats
-- **CSV Export**: Choose "Export as CSV" to download as CSV file
-- **JSON Export**: Choose "Export as JSON" to download as JSON file
-- **Copy to Clipboard**: Choose "Copy to clipboard" to copy the data
+Copy the example file:
 
-### Keyboard Shortcuts
+```bash
+cp .env.example .env
+```
 
-| Action                  | Shortcut |
-| ----------------------- | -------- |
-| Search                  | Ctrl + F |
-| Column Manager          | Ctrl + M |
-| Next Page               | →        |
-| Previous Page           | ←        |
-| Export as CSV           | Ctrl + E |
-| Toggle Theme            | Ctrl + D |
-| Show Keyboard Shortcuts | Ctrl + K |
+Current environment values supported by the app:
 
-## Future Roadmap
+- `PORT`: server port, defaults to `5000`
+- `NODE_ENV`: `development` or `production`
+- `LOG_FILE_PATH`: Winston log destination
+- `ALLOWED_ORIGINS`: comma-separated CORS allowlist
+- `DATABASE_URL`: present for DB tooling/scaffolding
 
-### Version 1.1.0 (Planned)
+### 4. Start development mode
 
-- Column reordering via drag-and-drop
-- Advanced filtering options for specific column types
-- Column type detection with appropriate formatting
+```bash
+npm run dev
+```
 
-### Version 1.2.0 (Planned)
+### 5. Build for production
 
-- Basic data visualization (histograms, bar charts)
-- Summary statistics for numeric columns
-- Data transformation history with undo/redo
+```bash
+npm run build
+```
 
-### Version 2.0.0 (Future)
+### 6. Start the production build
 
-- Import from different file formats (Excel, JSON)
-- Custom column type definitions and validations
-- Collaborative editing via WebSockets
-- User-defined templates and presets
+```bash
+npm run start
+```
 
-## Contributing
+## 🖥️ Available Scripts
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+```bash
+npm run dev      # start the app in development mode
+npm run build    # build the client and bundle the server
+npm run start    # run the production server from dist/
+npm run check    # run TypeScript checks
+npm run lint     # lint client, server, and shared code
+npm run format   # format project files with Prettier
+npm run db:push  # push Drizzle schema changes
+```
 
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## 🧪 User Workflow
 
-## Contact
+### Import
 
-- **Author**: 0xWulf
-- **Email**: dev@0xwulf.dev
-- **GitHub**: [github.com/0xwulf](https://github.com/0xwulf)
+- Drag a `.csv` file onto the upload area, or click to browse
+- Use the built-in example dataset if you just want to test the UI quickly
 
-## License
+### Explore
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- Search across all visible data
+- Sort by clicking a column header
+- Resize columns by dragging the header handle
+- Toggle visible columns from the Columns dialog
+
+### Edit
+
+- Click any cell to open the editor
+- Save direct text changes
+- Apply text transforms before saving
+
+### Export
+
+- Export the current filtered and visible data to CSV
+- Export the current filtered and visible data to JSON
+- Copy the current filtered and visible data to the clipboard
+
+## ⌨️ Keyboard Shortcuts
+
+TableTamer supports keyboard shortcuts for fast navigation and control:
+
+| Action                | Shortcut       |
+| --------------------- | -------------- |
+| Focus search          | `Ctrl/Cmd + F` |
+| Open column manager   | `Ctrl/Cmd + M` |
+| Export CSV            | `Ctrl/Cmd + E` |
+| Toggle theme          | `Ctrl/Cmd + D` |
+| Show shortcuts dialog | `Ctrl/Cmd + K` |
+| Next page             | `→`            |
+| Previous page         | `←`            |
+| Clear search          | `Esc`          |
+
+## 🔐 Security and Operational Notes
+
+- Helmet is enabled in production
+- API-prefixed routes are rate-limited
+- Response compression is enabled
+- CORS can be restricted with `ALLOWED_ORIGINS`
+- Server startup and request flow are logged through Winston
+
+See [SECURITY_AUDIT.md](SECURITY_AUDIT.md) for prior security cleanup notes.
+
+## 🧭 Roadmap Ideas
+
+Potential next steps that would fit the current codebase well:
+
+- Column reordering
+- Better type-aware rendering and sorting
+- Advanced per-column filters
+- Undo/redo for edits
+- Richer table summaries and lightweight visualizations
+- Removal of unused package/dependency surface
+
+## 🤝 Contributing
+
+Contributions are welcome. If you are making changes, keep the app working, keep the docs honest, and prefer small, testable improvements over speculative feature sprawl.
+
+Basic flow:
+
+1. Fork the repo
+2. Create a branch
+3. Make and verify your changes
+4. Open a pull request
+
+## 📫 Project Info
+
+- Author: 0xWulf
+- Email: `dev@0xwulf.dev`
+- Repository: [github.com/hexawulf/tabletamer](https://github.com/hexawulf/tabletamer)
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).  
+You can also read the standard MIT license text at [opensource.org/licenses/MIT](https://opensource.org/licenses/MIT).
