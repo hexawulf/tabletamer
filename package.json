@@ -5,7 +5,7 @@
   "author": "0xWulf <dev@0xwulf.dev>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/0xwulf/tabletamer.git"
+    "url": "https://github.com/hexawulf/tabletamer.git"
   },
   "type": "module",
   "license": "MIT",

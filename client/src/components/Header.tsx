@@ -38,7 +38,7 @@ export function Header() {
           <Tooltip>
             <TooltipTrigger asChild>
               <a
-                href="https://github.com/0xwulf/tabletamer"
+                href="https://github.com/hexawulf/tabletamer"
                 target="_blank"
                 rel="noreferrer noopener"
               >
