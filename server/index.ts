@@ -10,6 +10,9 @@ import logger from "./src/logger";
 logger.info("✅ Winston logger initialized – startup check");
 
 const app = express();
+
+// Trust proxy for rate limiting behind Nginx
+app.set("trust proxy", 1);
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? "")
   .split(",")
   .map((origin) => origin.trim())
