@@ -56,3 +56,7 @@ replit.nix
 # Miscellaneous
 .vercel
 .netlify
+# Editor/tooling backup snapshots (e.g. routes.ts.bak.20260604-2204)
+# Bare *.bak does not match a dated suffix — see the mailserver leak, 2026-09-20.
+*.bak
+*.bak.*
