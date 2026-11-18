@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Papa from "papaparse";
 
@@ -213,7 +213,11 @@ export function TableProvider({ children }: { children: ReactNode }) {
     }
   }, [toast]);
 
-  // Save to localStorage when data changes
+  // Save to localStorage when data changes.
+  // TT-01: never let a QuotaExceededError escape into the ErrorBoundary. On
+  // quota failure, keep working in memory, drop the stale stored copy and warn
+  // once per session.
+  const quotaWarnedRef = useRef(false);
   useEffect(() => {
     if (tableData.hasData) {
       const dataToSave = {
@@ -225,9 +229,33 @@ export function TableProvider({ children }: { children: ReactNode }) {
         sortDirection: tableData.sortDirection,
         pageSize: tableData.pageSize,
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+      } catch (error) {
+        // Remove any stale/partial copy so a later restore does not load it.
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          // ignore
+        }
+        if (!quotaWarnedRef.current) {
+          quotaWarnedRef.current = true;
+          toast({
+            title: "Too large to keep after reload",
+            description:
+              "This table is too big for browser storage, so it will not be restored next time. It stays fully usable in this tab.",
+            variant: "destructive",
+          });
+        }
+        console.warn("TableTamer: could not persist table to localStorage:", error);
+      }
     } else {
-      localStorage.removeItem(STORAGE_KEY);
+      quotaWarnedRef.current = false;
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // ignore
+      }
     }
   }, [
     tableData.data,
@@ -236,6 +264,9 @@ export function TableProvider({ children }: { children: ReactNode }) {
     tableData.sortDirection,
     tableData.pageSize,
     tableData.hasData,
+    tableData.columns,
+    tableData.fileName,
+    toast,
   ]);
 
   // Helper functions
