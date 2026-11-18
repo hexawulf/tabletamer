@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-11-18
+
+### Fixed
+
+- The server did not start listening under pm2 (v1.1.0 regression from TT-09):
+  the "run directly" check compared `import.meta.url` with `process.argv[1]`,
+  which is pm2's wrapper script. It now starts unless Vitest imports it.
+
 ## [1.1.0] - 2026-11-18
 
 Audit 2026-11-18 (findings TT-01…TT-10).
