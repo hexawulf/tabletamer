@@ -360,7 +360,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
         Papa.parse(file, {
           header: true,
           skipEmptyLines: true,
-          dynamicTyping: true,
+          dynamicTyping: false, // TT-02: keep original strings; no silent coercion
           complete: (parseResult) => {
             if (parseResult.errors.length > 0) {
               reject(new Error(parseResult.errors[0].message));
