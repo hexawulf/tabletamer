@@ -437,7 +437,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
         title: "Example data loaded",
         description: "Successfully loaded example data",
       });
-    } catch (error) {
+    } catch {
       setTableData((prev) => ({ ...prev, isLoading: false }));
       toast({
         title: "Error",
