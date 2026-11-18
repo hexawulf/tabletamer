@@ -1,6 +1,6 @@
 {
   "name": "tabletamer",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A browser-based CSV visualization and transformation tool that converts raw CSV data into beautiful, interactive tables",
   "author": "0xWulf <dev@0xwulf.dev>",
   "repository": {
@@ -33,9 +33,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "compression": "^1.8.1",
-    "cors": "^2.8.5",
     "express": "^4.21.2",
-    "express-rate-limit": "^8.2.1",
     "helmet": "^8.1.0",
     "lucide-react": "^0.453.0",
     "papaparse": "^5.5.2",
@@ -52,7 +50,6 @@
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@types/compression": "^1.8.1",
-    "@types/cors": "^2.8.19",
     "@types/express": "4.17.21",
     "@types/node": "^20.19.0",
     "@types/papaparse": "^5.5.2",
