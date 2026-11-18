@@ -1,6 +1,6 @@
 {
   "name": "tabletamer",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A browser-based CSV visualization and transformation tool that converts raw CSV data into beautiful, interactive tables",
   "author": "0xWulf <dev@0xwulf.dev>",
   "repository": {

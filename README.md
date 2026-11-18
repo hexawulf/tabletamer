@@ -3,7 +3,7 @@
 **Turn a CSV file into a table you can search, sort, edit and export, all in your browser.**
 
 <p>
-  <img src="https://img.shields.io/badge/version-1.1.1-blue" alt="v1.1.1" />
+  <img src="https://img.shields.io/badge/version-1.1.2-blue" alt="v1.1.2" />
   <img src="https://img.shields.io/badge/node-%E2%89%A522-339933?logo=node.js&logoColor=white" alt="Node 22+" />
   <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" alt="React 18" />
   <img src="https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white" alt="Vite 7" />
@@ -160,6 +160,17 @@ Notes:
 - `ecosystem.config.cjs` sets `HOST`, `PORT` and `NODE_ENV`, and turns pm2 watch off, so a rebuild does not restart the app halfway through.
 - Hashed files under `/assets/` are sent with a one-year `immutable` cache header. `index.html` is sent with `no-cache`, so a new release shows up at once.
 - Helmet sets the security headers, and `x-powered-by` is off. Any `/api/*` path returns a JSON 404, because there is no API.
+- `GET /healthz` returns `200 {"status":"ok"}` for uptime monitors.
+
+Check a deploy:
+
+```bash
+pm2 status tabletamer
+ss -ltnp | grep ':5000 '                                     # must show 127.0.0.1:5000
+curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:5000/healthz   # 200
+```
+
+`pm2 status` alone is not enough: in v1.1.0 the process showed `online` but never opened the port.
 
 ## Tech stack
 
@@ -174,6 +185,7 @@ See [CHANGELOG.md](CHANGELOG.md) for details.
 
 | Version   | Date       | Highlights                                                                                                  |
 | --------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
+| **1.1.2** | 2026-11-18 | Removed unused server dependencies (`cors`, `express-rate-limit`)                                           |
 | **1.1.1** | 2026-11-18 | Fix: the server starts listening under pm2                                                                  |
 | **1.1.0** | 2026-11-18 | Audit fixes: no value coercion, type-aware sorting, storage-quota safety, formula-safe export, tests and CI |
 | **1.0.0** | 2025-05-13 | First release                                                                                               |
