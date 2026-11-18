@@ -349,10 +349,10 @@ export function TableProvider({ children }: { children: ReactNode }) {
           skipEmptyLines: true,
           dynamicTyping: false, // TT-02: keep original strings; no silent coercion
           complete: (parseResult) => {
-            if (parseResult.errors.length > 0) {
-              reject(new Error(parseResult.errors[0].message));
-              return;
-            }
+            // TT-03: do not reject on per-row field-count errors. A single
+            // ragged row must not throw the whole file away. Only a parse
+            // error that leaves no usable data (e.g. an undetectable delimiter)
+            // should fail, and that is handled below once we have the rows.
             resolve(parseResult as Papa.ParseResult<TableRow>);
           },
           error: reject,
@@ -362,8 +362,26 @@ export function TableProvider({ children }: { children: ReactNode }) {
       const data = normalizeRows(result.data);
       const columns = getColumnsFromRows(data);
       if (data.length === 0 || columns.length === 0) {
-        throw new Error("No data found in CSV file");
+        // Nothing usable parsed — surface the first error if PapaParse gave one.
+        const firstError = result.errors[0];
+        throw new Error(firstError ? firstError.message : "No data found in CSV file");
       }
+
+      // TT-03: count rows that had a different number of fields and warn,
+      // without blocking the load.
+      const fieldCountErrors = result.errors.filter(
+        (e) => e.type === "FieldMismatch",
+      );
+      const affectedRows = new Set(
+        fieldCountErrors.map((e) => e.row).filter((r) => r !== undefined),
+      ).size;
+      if (affectedRows > 0) {
+        toast({
+          title: "Some rows had a different number of fields",
+          description: `${affectedRows} row${affectedRows === 1 ? "" : "s"} did not match the header. They were loaded anyway — check them.`,
+        });
+      }
+
       const columnVisibility = buildColumnVisibility(columns);
       const columnTypes = detectColumnTypes(data, columns);
 
