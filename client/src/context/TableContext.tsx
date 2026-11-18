@@ -501,33 +501,23 @@ export function TableProvider({ children }: { children: ReactNode }) {
   };
 
   const toggleColumnVisibility = (column: string) => {
+    // TT-10: decide and toast outside the state updater so StrictMode's double
+    // invocation does not fire the toast twice.
+    const currentlyVisible = tableData.columnVisibility[column] !== false;
+    if (currentlyVisible && tableData.visibleColumns.length <= 1) {
+      toast({
+        title: "At least one column is required",
+        description: "Keep one column visible so the table remains usable.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setTableData((prev) => {
-      if (!prev.columnVisibility[column]) {
-        const newVisibility = {
-          ...prev.columnVisibility,
-          [column]: true,
-        };
-        return {
-          ...prev,
-          columnVisibility: newVisibility,
-          visibleColumns: getVisibleColumns(prev.columns, newVisibility),
-        };
-      }
-
-      if (prev.visibleColumns.length <= 1) {
-        toast({
-          title: "At least one column is required",
-          description: "Keep one column visible so the table remains usable.",
-          variant: "destructive",
-        });
-        return prev;
-      }
-
       const newVisibility = {
         ...prev.columnVisibility,
         [column]: !prev.columnVisibility[column],
       };
-
       return {
         ...prev,
         columnVisibility: newVisibility,

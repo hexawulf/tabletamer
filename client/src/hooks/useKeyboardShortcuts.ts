@@ -61,15 +61,15 @@ export function useKeyboardShortcuts({
         return;
       }
 
-      // Ctrl + E for export
-      if (shortcutKey && key === "e") {
+      // Alt + Shift + E for export (Ctrl/Cmd+E is the browser's own)
+      if (event.altKey && event.shiftKey && key === "e") {
         event.preventDefault();
         exportData("csv");
         return;
       }
 
-      // Ctrl + D for dark mode toggle
-      if (shortcutKey && key === "d") {
+      // Alt + Shift + D for dark mode toggle (Ctrl/Cmd+D is bookmark)
+      if (event.altKey && event.shiftKey && key === "d") {
         event.preventDefault();
         setTheme(theme === "dark" ? "light" : "dark");
         return;

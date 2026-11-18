@@ -183,8 +183,8 @@ TableTamer supports keyboard shortcuts for fast navigation and control:
 | --------------------- | -------------- |
 | Focus search          | `Ctrl/Cmd + F` |
 | Open column manager   | `Ctrl/Cmd + M` |
-| Export CSV            | `Ctrl/Cmd + E` |
-| Toggle theme          | `Ctrl/Cmd + D` |
+| Export CSV            | `Alt + Shift + E` |
+| Toggle theme          | `Alt + Shift + D` |
 | Show shortcuts dialog | `Ctrl/Cmd + K` |
 | Next page             | `→`            |
 | Previous page         | `←`            |
@@ -193,7 +193,7 @@ TableTamer supports keyboard shortcuts for fast navigation and control:
 ## 🔐 Security and Operational Notes
 
 - Helmet is enabled in production
-- API-prefixed routes are rate-limited
+- There is no API or database; `/api/*` returns a JSON 404
 - Response compression is enabled
 - CORS can be restricted with `ALLOWED_ORIGINS`
 - Server startup and request flow are logged through Winston
