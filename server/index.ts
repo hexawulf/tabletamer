@@ -62,8 +62,11 @@ export async function buildServer() {
   return server;
 }
 
-// Start only when run directly, so tests can import buildServer/createApp.
-const isMain = import.meta.url === `file://${process.argv[1]}`;
+// Start unless imported by the test runner, so tests can import
+// buildServer/createApp. Do not compare import.meta.url with process.argv[1]:
+// under pm2, argv[1] is pm2's ProcessContainerFork wrapper, so the server
+// never listened in production (v1.1.0).
+const isMain = !process.env.VITEST;
 if (isMain) {
   buildServer()
     .then((server) => {

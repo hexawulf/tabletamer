@@ -46,7 +46,7 @@ export function Footer() {
                 About
               </button>
               <span>|</span>
-              <span>TableTamer v1.1.0</span>
+              <span>TableTamer v1.1.1</span>
             </div>
           </div>
         </div>
