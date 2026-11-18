@@ -18,12 +18,6 @@ export default tseslint.config(
       'postcss.config.js',
       'tailwind.config.ts',
       'client/src/components/ui/**', // generated shadcn primitives
-      // Dead files removed in TT-07; ignored here so the safety net is green.
-      'client/src/hooks/useTableData.ts',
-      'client/src/lib/csvUtils.ts',
-      'server/storage.ts',
-      'server/routes.ts',
-      'shared/schema.ts',
     ],
   },
   js.configs.recommended,
