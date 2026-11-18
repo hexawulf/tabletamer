@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Papa from "papaparse";
+import { detectColumnTypes, sortRowsByType, type ColumnType } from "@/lib/columnTypes";
 
 type TableRow = Record<string, unknown>;
 const STORAGE_KEY = "tableTamerData";
@@ -69,6 +70,7 @@ const getBaseFileName = (fileName: string) =>
 interface TableData {
   data: TableRow[];
   columns: string[];
+  columnTypes: Record<string, ColumnType>;
   columnVisibility: Record<string, boolean>;
   visibleColumns: string[];
   filteredRows: TableRow[];
@@ -122,6 +124,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
   const initialTableData: TableData = {
     data: [],
     columns: [],
+    columnTypes: {},
     columnVisibility: {},
     visibleColumns: [],
     filteredRows: [],
@@ -186,12 +189,14 @@ export function TableProvider({ children }: { children: ReactNode }) {
             parsedData?.columnVisibility?.[column] === false ? false : true;
         });
         const visibleColumns = getVisibleColumns(columns, columnVisibility);
-        const filteredRows = sortRows(data, sortColumn, sortDirection);
+        const columnTypes = detectColumnTypes(data, columns);
+        const filteredRows = sortRows(data, sortColumn, sortDirection, columnTypes);
 
         setTableData((prev) => ({
           ...prev,
           data,
           columns,
+          columnTypes,
           columnVisibility,
           visibleColumns: visibleColumns.length > 0 ? visibleColumns : columns,
           filteredRows,
@@ -291,37 +296,19 @@ export function TableProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * Sorts table rows by the specified column and direction
-   * @param rows Array of data rows to sort
-   * @param column Column name to sort by
-   * @param direction Sort direction ("asc" or "desc")
-   * @returns Sorted array of rows
+   * Sorts table rows by the specified column using the column's detected type
+   * (TT-04). Blank cells always sort last; mixed columns fall back to a
+   * locale-aware numeric string compare.
    */
-  const sortRows = (rows: TableRow[], column: string | null, direction: "asc" | "desc") => {
+  const sortRows = (
+    rows: TableRow[],
+    column: string | null,
+    direction: "asc" | "desc",
+    columnTypes: Record<string, ColumnType>,
+  ) => {
     if (!column) return rows;
-
-    return [...rows].sort((a, b) => {
-      const valueA = a[column];
-      const valueB = b[column];
-
-      // Handle null/undefined values
-      if (valueA == null && valueB == null) return 0;
-      if (valueA == null) return direction === "asc" ? -1 : 1;
-      if (valueB == null) return direction === "asc" ? 1 : -1;
-
-      // Try to compare as numbers first
-      const numA = Number(valueA);
-      const numB = Number(valueB);
-
-      if (!isNaN(numA) && !isNaN(numB)) {
-        return direction === "asc" ? numA - numB : numB - numA;
-      }
-
-      // Fall back to string comparison
-      const strA = String(valueA).toLowerCase();
-      const strB = String(valueB).toLowerCase();
-      return direction === "asc" ? strA.localeCompare(strB) : strB.localeCompare(strA);
-    });
+    const type = columnTypes[column] ?? "string";
+    return sortRowsByType(rows, column, direction, type);
   };
 
   // Main actions
@@ -378,12 +365,14 @@ export function TableProvider({ children }: { children: ReactNode }) {
         throw new Error("No data found in CSV file");
       }
       const columnVisibility = buildColumnVisibility(columns);
+      const columnTypes = detectColumnTypes(data, columns);
 
       setTableData((prev) => {
         const newState: TableData = {
           ...prev,
           data,
           columns,
+          columnTypes,
           columnVisibility,
           visibleColumns: columns,
           filteredRows: data,
@@ -447,10 +436,12 @@ export function TableProvider({ children }: { children: ReactNode }) {
       }));
 
       const columnVisibility = buildColumnVisibility(columns);
+      const columnTypes = detectColumnTypes(data, columns);
 
       setTableData({
         data,
         columns,
+        columnTypes,
         columnVisibility,
         visibleColumns: columns,
         filteredRows: data,
@@ -550,7 +541,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       const direction =
         prev.sortColumn === column ? (prev.sortDirection === "asc" ? "desc" : "asc") : "asc";
 
-      const filteredRows = sortRows(prev.filteredRows, column, direction);
+      const filteredRows = sortRows(prev.filteredRows, column, direction, prev.columnTypes);
 
       return {
         ...prev,
@@ -564,7 +555,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
   const updateSearch = (query: string) => {
     setTableData((prev) => {
       const filtered = filterRows(prev.data, query);
-      const sorted = sortRows(filtered, prev.sortColumn, prev.sortDirection);
+      const sorted = sortRows(filtered, prev.sortColumn, prev.sortDirection, prev.columnTypes);
 
       return {
         ...prev,
@@ -618,6 +609,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
         filterRows(updatedData, prev.searchQuery),
         prev.sortColumn,
         prev.sortDirection,
+        prev.columnTypes,
       );
       const maxPage = Math.max(1, Math.ceil(filteredRows.length / prev.pageSize));
 
