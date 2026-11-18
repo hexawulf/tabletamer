@@ -1,234 +1,194 @@
 # 📊 TableTamer
 
-TableTamer is a polished CSV workbench for the browser. Drop in a CSV file and it turns into a searchable, sortable, editable table with column controls, pagination, theme support, clipboard export, and local session persistence.
+**Turn a CSV file into a table you can search, sort, edit and export, all in your browser.**
 
-![TableTamer Screenshot](screenshots/tabletamer.png)
+<p>
+  <img src="https://img.shields.io/badge/version-1.1.1-blue" alt="v1.1.1" />
+  <img src="https://img.shields.io/badge/node-%E2%89%A522-339933?logo=node.js&logoColor=white" alt="Node 22+" />
+  <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" alt="React 18" />
+  <img src="https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white" alt="Vite 7" />
+  <a href="https://github.com/hexawulf/tabletamer/actions/workflows/ci.yml"><img src="https://github.com/hexawulf/tabletamer/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT" /></a>
+</p>
 
-## ✨ Current State
+**Live:** [tabletamer.piapps.dev](https://tabletamer.piapps.dev)
 
-TableTamer is currently a client-first React application served by a lightweight Express wrapper.
+![TableTamer with the example data set, sorted by amount](screenshots/tabletamer.png)
 
-What works today:
+## Contents
 
-- 📂 Drag-and-drop CSV upload
-- 🧪 Example dataset loading
-- 🔎 Global table search
-- ↕️ Column sorting
-- ↔️ Column resizing
-- 👁️ Column visibility management
-- ✍️ Inline cell editing
-- 🔤 Cell text transforms: uppercase, lowercase, title case, clear
-- 📄 Pagination with configurable page sizes
-- 💾 Session restore via `localStorage`
-- 📤 Export filtered visible data as CSV or JSON
-- 📋 Copy filtered visible data to clipboard
-- 🌗 Light and dark theme toggle
-- ⌨️ Keyboard shortcuts for common actions
-- 🛡️ Error boundary protection in the UI
-- 🚦 Production server protections such as Helmet, compression, CORS, and rate limiting
+- [Features](#features)
+- [How your data is handled](#how-your-data-is-handled)
+- [Keyboard shortcuts](#keyboard-shortcuts)
+- [Quick start](#quick-start)
+- [Scripts](#scripts)
+- [Configuration](#configuration)
+- [Project layout](#project-layout)
+- [Deployment](#deployment)
+- [Tech stack](#tech-stack)
+- [Version history](#version-history)
+- [Contributing](#contributing)
+- [License](#license)
 
-What it is not today:
+## Features
 
-- It is not a multi-user or collaborative system.
-- It does not currently expose a meaningful public API.
-- It includes database-related packages and scaffolding, but the active app flow is centered on in-browser CSV handling.
+**Load**
 
-## 🧱 Architecture
+- Drag and drop a `.csv` file, or click to choose one.
+- Try the app at once with the built-in example data set (150 rows).
+- Rows with a different number of fields still load. You get a warning instead of an error.
 
-The repository is split into a small server layer and a browser app:
+**Explore**
 
-- `client/`: React SPA built with Vite
-- `server/`: Express server for production delivery and middleware
-- `shared/`: shared TypeScript schema/types
-- `public/`: favicons and static site assets
-- `screenshots/`: project screenshots used in docs
+- Search across all columns.
+- Click a column header to sort. Sorting knows numbers, money values and dates, is stable, and always puts empty cells last. Dates with slashes are read day-first.
+- Drag a header edge to resize a column.
+- Show or hide columns in the **Columns** dialog.
+- Page through the data with 10, 25, 50 or 100 rows per page.
 
-The app’s core state lives in `client/src/context/TableContext.tsx`, which owns CSV ingestion, filtering, sorting, pagination, editing, exports, clipboard behavior, and persisted session restore.
+**Edit**
 
-## 🛠️ Full Tech Stack
+- Click a cell to edit it. An edited cell keeps its place until you sort again.
+- Apply a text transform before you save: UPPERCASE, lowercase, Title Case, or clear.
 
-### Frontend
+**Export**
 
-- ⚛️ React 18
-- 🧠 TypeScript
-- ⚡ Vite 7
-- 🧭 Wouter for routing
-- 📊 TanStack Table for table mechanics
-- 🔄 TanStack Query installed for async/query infrastructure
-- 🎨 Tailwind CSS
-- 🧩 shadcn/ui style component architecture
-- 🧱 Radix UI primitives
-- 🌙 `next-themes` for theme management
-- 🖼️ Lucide React icons
+- Export the filtered, visible data as CSV or JSON.
+- Copy the data to the clipboard as JSON.
+- Cells that start with `=`, `+`, `-` or `@` are escaped in CSV exports, so a spreadsheet does not run them as formulas.
 
-### Data Handling
+**General**
 
-- 🧾 PapaParse for CSV parsing and CSV export generation
-- 💽 Browser `localStorage` for session persistence
-- 📋 Clipboard API with fallback support for copy operations
+- Light and dark theme.
+- Your last table comes back after a reload (from `localStorage`).
+- An error boundary keeps a rendering error from blanking the whole page.
 
-### Server / Runtime
+## How your data is handled
 
-- 🚂 Express 4
-- 🗜️ `compression`
-- 🪖 `helmet`
-- 🌐 `cors`
-- 🚥 `express-rate-limit`
-- 🪵 Winston logging
-- 🔧 `tsx` for local development runtime
-- 📦 `esbuild` for bundling the production server entry
+- CSV files are parsed **in your browser** with PapaParse. They are never uploaded. The server only delivers the app.
+- Values stay exactly as they are in the file. Leading zeros, long IDs, `1e3` and `TRUE` are not converted, so a CSV export gives back the same text.
+- The current table is kept in your browser's `localStorage`. If the file is too large for the storage quota, the table still works, and a message tells you it will not be restored after a reload.
+- There are no accounts, no analytics and no database.
 
-### Deployment / Ops
+## Keyboard shortcuts
 
-- ♻️ PM2 ecosystem config included for process management
-- 🐧 Node.js 18+ supported
-- 🧰 Husky + lint-staged configured for local workflow hygiene
+| Action                | Shortcut          |
+| --------------------- | ----------------- |
+| Focus search          | `Ctrl/Cmd + F`    |
+| Open column manager   | `Ctrl/Cmd + M`    |
+| Show shortcuts dialog | `Ctrl/Cmd + K`    |
+| Export CSV            | `Alt + Shift + E` |
+| Toggle theme          | `Alt + Shift + D` |
+| Next page             | `→`               |
+| Previous page         | `←`               |
+| Clear search          | `Esc`             |
 
-### Additional Installed Packages
+Export and theme use `Alt + Shift` so that they do not clash with the browser's own `Ctrl + E` and `Ctrl + D`.
 
-The repository also includes packages for forms, validation, charts, sessions, Drizzle ORM, and other UI primitives. Some of these are currently unused in the active CSV workflow, but they are present in the repo and may support future work.
+## Quick start
 
-## 🚀 Getting Started
-
-### 1. Clone the repo
+You need **Node.js 22 or later** and npm.
 
 ```bash
 git clone https://github.com/hexawulf/tabletamer.git
 cd tabletamer
+npm ci
+npm run dev        # http://127.0.0.1:5000 with Vite hot reload
 ```
 
-### 2. Install dependencies
+Production build:
 
 ```bash
-npm install
+npm run build      # client → dist/public, server → dist/index.js
+npm start          # NODE_ENV=production node dist/index.js
 ```
 
-### 3. Configure environment variables
+## Scripts
 
-Copy the example file:
+| Script                  | What it does                                     |
+| ----------------------- | ------------------------------------------------ |
+| `npm run dev`           | Start the Express server with Vite in dev mode   |
+| `npm run build`         | Build the client with Vite and bundle the server |
+| `npm start`             | Run the production build from `dist/`            |
+| `npm test`              | Run the Vitest suite once                        |
+| `npm run test:watch`    | Run Vitest in watch mode                         |
+| `npm run test:coverage` | Run the tests with V8 coverage                   |
+| `npm run lint`          | ESLint (flat config)                             |
+| `npm run check`         | TypeScript type check (`tsc`)                    |
+| `npm run format`        | Format the project with Prettier                 |
 
-```bash
-cp .env.example .env
+A Husky pre-commit hook runs Prettier on staged files. CI (GitHub Actions, Node 22 and 24) runs lint, type check, tests and build on pushes to `main` and on pull requests, and a separate job runs `npm audit` on the production dependencies.
+
+## Configuration
+
+The server reads these environment variables. It does not load a `.env` file by itself, so set them in your shell or in the pm2 ecosystem file.
+
+| Variable        | Default               | Purpose                                 |
+| --------------- | --------------------- | --------------------------------------- |
+| `PORT`          | `5000`                | Port to listen on                       |
+| `HOST`          | `127.0.0.1`           | Address to bind; keep it behind a proxy |
+| `NODE_ENV`      | (none)                | `production` serves the built client    |
+| `LOG_FILE_PATH` | `logs/tabletamer.log` | Winston log file                        |
+
+## Project layout
+
+```text
+client/              React app (Vite)
+  src/context/       TableContext: loading, sorting, filtering, editing, export, persistence
+  src/components/    TableView, FileUpload, CellEditor, ColumnManager, About, shortcuts
+  src/lib/           Column type detection and sort comparators, with unit tests
+server/              Express server: static files, cache headers, /api JSON 404
+public/              Favicons and web manifest
+screenshots/         Images used in this README
+ecosystem.config.cjs pm2 process definition
 ```
 
-Current environment values supported by the app:
+## Deployment
 
-- `PORT`: server port, defaults to `5000`
-- `NODE_ENV`: `development` or `production`
-- `LOG_FILE_PATH`: Winston log destination
-- `ALLOWED_ORIGINS`: comma-separated CORS allowlist
-- `DATABASE_URL`: present for DB tooling/scaffolding
-
-### 4. Start development mode
+TableTamer runs on piapps under pm2, behind nginx with TLS.
 
 ```bash
-npm run dev
-```
-
-### 5. Build for production
-
-```bash
+git pull --ff-only origin main
+npm ci
 npm run build
+pm2 restart tabletamer      # use pm2 start ecosystem.config.cjs the first time
 ```
 
-### 6. Start the production build
+Notes:
 
-```bash
-npm run start
-```
+- The server binds to `127.0.0.1:5000`. nginx proxies to it.
+- `ecosystem.config.cjs` sets `HOST`, `PORT` and `NODE_ENV`, and turns pm2 watch off, so a rebuild does not restart the app halfway through.
+- Hashed files under `/assets/` are sent with a one-year `immutable` cache header. `index.html` is sent with `no-cache`, so a new release shows up at once.
+- Helmet sets the security headers, and `x-powered-by` is off. Any `/api/*` path returns a JSON 404, because there is no API.
 
-## 🖥️ Available Scripts
+## Tech stack
 
-```bash
-npm run dev      # start the app in development mode
-npm run build    # build the client and bundle the server
-npm run start    # run the production server from dist/
-npm run check    # run TypeScript checks
-npm run lint     # lint client, server, and shared code
-npm run format   # format project files with Prettier
-npm run db:push  # push Drizzle schema changes
-```
+- **Frontend:** React 18, TypeScript, Vite 7, Tailwind CSS 3, Radix UI primitives (shadcn/ui style), Lucide icons, Wouter
+- **Data:** PapaParse, browser `localStorage`, Clipboard API
+- **Server:** Express 4, Helmet, compression, Winston
+- **Tooling:** Vitest, Testing Library, Supertest, ESLint 9, Prettier, Husky, lint-staged, esbuild
 
-## 🧪 User Workflow
+## Version history
 
-### Import
+See [CHANGELOG.md](CHANGELOG.md) for details.
 
-- Drag a `.csv` file onto the upload area, or click to browse
-- Use the built-in example dataset if you just want to test the UI quickly
+| Version   | Date       | Highlights                                                                                                  |
+| --------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
+| **1.1.1** | 2026-11-18 | Fix: the server starts listening under pm2                                                                  |
+| **1.1.0** | 2026-11-18 | Audit fixes: no value coercion, type-aware sorting, storage-quota safety, formula-safe export, tests and CI |
+| **1.0.0** | 2025-05-13 | First release                                                                                               |
 
-### Explore
+Older security notes are in [SECURITY_AUDIT.md](SECURITY_AUDIT.md).
 
-- Search across all visible data
-- Sort by clicking a column header
-- Resize columns by dragging the header handle
-- Toggle visible columns from the Columns dialog
+## Contributing
 
-### Edit
+Contributions are welcome. Keep changes small and tested:
 
-- Click any cell to open the editor
-- Save direct text changes
-- Apply text transforms before saving
+1. Fork the repository and create a branch.
+2. Make your change, and add a test when it changes behaviour.
+3. Run `npm run lint && npm run check && npm test && npm run build`.
+4. Open a pull request.
 
-### Export
+## License
 
-- Export the current filtered and visible data to CSV
-- Export the current filtered and visible data to JSON
-- Copy the current filtered and visible data to the clipboard
-
-## ⌨️ Keyboard Shortcuts
-
-TableTamer supports keyboard shortcuts for fast navigation and control:
-
-| Action                | Shortcut       |
-| --------------------- | -------------- |
-| Focus search          | `Ctrl/Cmd + F` |
-| Open column manager   | `Ctrl/Cmd + M` |
-| Export CSV            | `Alt + Shift + E` |
-| Toggle theme          | `Alt + Shift + D` |
-| Show shortcuts dialog | `Ctrl/Cmd + K` |
-| Next page             | `→`            |
-| Previous page         | `←`            |
-| Clear search          | `Esc`          |
-
-## 🔐 Security and Operational Notes
-
-- Helmet is enabled in production
-- There is no API or database; `/api/*` returns a JSON 404
-- Response compression is enabled
-- CORS can be restricted with `ALLOWED_ORIGINS`
-- Server startup and request flow are logged through Winston
-
-See [SECURITY_AUDIT.md](SECURITY_AUDIT.md) for prior security cleanup notes.
-
-## 🧭 Roadmap Ideas
-
-Potential next steps that would fit the current codebase well:
-
-- Column reordering
-- Better type-aware rendering and sorting
-- Advanced per-column filters
-- Undo/redo for edits
-- Richer table summaries and lightweight visualizations
-- Removal of unused package/dependency surface
-
-## 🤝 Contributing
-
-Contributions are welcome. If you are making changes, keep the app working, keep the docs honest, and prefer small, testable improvements over speculative feature sprawl.
-
-Basic flow:
-
-1. Fork the repo
-2. Create a branch
-3. Make and verify your changes
-4. Open a pull request
-
-## 📫 Project Info
-
-- Author: 0xWulf
-- Email: `dev@0xwulf.dev`
-- Repository: [github.com/hexawulf/tabletamer](https://github.com/hexawulf/tabletamer)
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).  
-You can also read the standard MIT license text at [opensource.org/licenses/MIT](https://opensource.org/licenses/MIT).
+[MIT](LICENSE) © 0xWulf · [dev@0xwulf.dev](mailto:dev@0xwulf.dev)

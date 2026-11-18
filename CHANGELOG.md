@@ -43,7 +43,7 @@ Audit 2026-11-18 (findings TT-01…TT-10).
 - Unused server/auth/DB packages and dead files (Replit template leftovers),
   unused shadcn UI components (TT-06, TT-07).
 
-## [1.0.0] - 2024-05-13
+## [1.0.0] - 2025-05-13
 
 ### Initial Release
 
