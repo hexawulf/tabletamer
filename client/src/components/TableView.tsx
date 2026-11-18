@@ -173,7 +173,12 @@ export function TableView() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => exportData("csv")}>Export as CSV</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => exportData("csv")}
+                title="Cells starting with = + - @ are prefixed so spreadsheets do not run them as formulas."
+              >
+                Export as CSV
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => exportData("json")}>Export as JSON</DropdownMenuItem>
               <DropdownMenuItem onClick={() => copyToClipboard()}>
                 Copy to clipboard

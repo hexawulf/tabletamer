@@ -623,12 +623,18 @@ export function TableProvider({ children }: { children: ReactNode }) {
       };
       const updatedData = [...prev.data];
       updatedData[originalIndex] = updatedRow;
-      const filteredRows = sortRows(
-        filterRows(updatedData, prev.searchQuery),
-        prev.sortColumn,
-        prev.sortDirection,
-        prev.columnTypes,
-      );
+
+      // TT-08: keep the edited row where it is. Update it in place in the
+      // current filtered view instead of re-sorting, so it does not jump away.
+      // Re-apply the search filter so an edit that no longer matches drops out,
+      // but do not re-sort until the user sorts again.
+      let filteredRows: TableRow[];
+      if (prev.searchQuery.trim()) {
+        filteredRows = filterRows(updatedData, prev.searchQuery);
+      } else {
+        filteredRows = [...prev.filteredRows];
+        filteredRows[dataIndex] = updatedRow;
+      }
       const maxPage = Math.max(1, Math.ceil(filteredRows.length / prev.pageSize));
 
       return {
@@ -683,7 +689,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       const baseFileName = getBaseFileName(tableData.fileName);
       if (format === "csv") {
         downloadTextFile(
-          Papa.unparse(dataToExport),
+          Papa.unparse(dataToExport, { escapeFormulae: true }),
           `${baseFileName}_export.csv`,
           "text/csv;charset=utf-8;",
         );
