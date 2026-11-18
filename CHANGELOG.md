@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Audit 2026-11-18 (findings TT-01…TT-10).
 
 ### Fixed
+
 - Loading a large CSV no longer crashes the app when browser storage is full;
   the table stays usable and a toast explains it will not be restored (TT-01).
 - CSV values are no longer silently coerced on load (leading zeros, long IDs,
@@ -24,17 +25,20 @@ Audit 2026-11-18 (findings TT-01…TT-10).
 - Dark-mode and export keyboard shortcuts moved off Ctrl+D / Ctrl+E (TT-10).
 
 ### Changed
+
 - Server: dropped CORS, the no-op API rate limiter and the request logger;
   `/api/*` returns a JSON 404; binds `127.0.0.1`; `x-powered-by` off (TT-09).
-- Tooling: ESLint flat config, Vitest tests, CI on Node 20 and 22 (TT-05).
+- Tooling: ESLint flat config, Vitest tests, CI on Node 22 and 24 (TT-05).
 
 ### Removed
+
 - Unused server/auth/DB packages and dead files (Replit template leftovers),
   unused shadcn UI components (TT-06, TT-07).
 
 ## [1.0.0] - 2024-05-13
 
 ### Initial Release
+
 - CSV file upload with drag-and-drop
 - Table display with pagination
 - Row sorting and filtering

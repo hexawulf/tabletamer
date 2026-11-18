@@ -38,7 +38,7 @@ export function Footer() {
                 Keyboard Shortcuts
               </button>
               <span>|</span>
-              <button 
+              <button
                 className="hover:text-primary-600 dark:hover:text-primary-400 flex items-center"
                 onClick={() => setShowAbout(true)}
               >
@@ -46,7 +46,7 @@ export function Footer() {
                 About
               </button>
               <span>|</span>
-              <span>TableTamer v1.0.0</span>
+              <span>TableTamer v1.1.0</span>
             </div>
           </div>
         </div>
@@ -55,10 +55,8 @@ export function Footer() {
       {showKeyboardShortcuts && (
         <KeyboardShortcuts onClose={() => setShowKeyboardShortcuts(false)} />
       )}
-      
-      {showAbout && (
-        <AboutModal onClose={() => setShowAbout(false)} />
-      )}
+
+      {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
     </>
   );
 }
