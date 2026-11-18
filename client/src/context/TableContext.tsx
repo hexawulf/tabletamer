@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Papa from "papaparse";
+import { detectColumnTypes, sortRowsByType, type ColumnType } from "@/lib/columnTypes";
 
 type TableRow = Record<string, unknown>;
 const STORAGE_KEY = "tableTamerData";
@@ -69,6 +70,7 @@ const getBaseFileName = (fileName: string) =>
 interface TableData {
   data: TableRow[];
   columns: string[];
+  columnTypes: Record<string, ColumnType>;
   columnVisibility: Record<string, boolean>;
   visibleColumns: string[];
   filteredRows: TableRow[];
@@ -122,6 +124,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
   const initialTableData: TableData = {
     data: [],
     columns: [],
+    columnTypes: {},
     columnVisibility: {},
     visibleColumns: [],
     filteredRows: [],
@@ -186,12 +189,14 @@ export function TableProvider({ children }: { children: ReactNode }) {
             parsedData?.columnVisibility?.[column] === false ? false : true;
         });
         const visibleColumns = getVisibleColumns(columns, columnVisibility);
-        const filteredRows = sortRows(data, sortColumn, sortDirection);
+        const columnTypes = detectColumnTypes(data, columns);
+        const filteredRows = sortRows(data, sortColumn, sortDirection, columnTypes);
 
         setTableData((prev) => ({
           ...prev,
           data,
           columns,
+          columnTypes,
           columnVisibility,
           visibleColumns: visibleColumns.length > 0 ? visibleColumns : columns,
           filteredRows,
@@ -213,7 +218,11 @@ export function TableProvider({ children }: { children: ReactNode }) {
     }
   }, [toast]);
 
-  // Save to localStorage when data changes
+  // Save to localStorage when data changes.
+  // TT-01: never let a QuotaExceededError escape into the ErrorBoundary. On
+  // quota failure, keep working in memory, drop the stale stored copy and warn
+  // once per session.
+  const quotaWarnedRef = useRef(false);
   useEffect(() => {
     if (tableData.hasData) {
       const dataToSave = {
@@ -225,9 +234,33 @@ export function TableProvider({ children }: { children: ReactNode }) {
         sortDirection: tableData.sortDirection,
         pageSize: tableData.pageSize,
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+      } catch (error) {
+        // Remove any stale/partial copy so a later restore does not load it.
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          // ignore
+        }
+        if (!quotaWarnedRef.current) {
+          quotaWarnedRef.current = true;
+          toast({
+            title: "Too large to keep after reload",
+            description:
+              "This table is too big for browser storage, so it will not be restored next time. It stays fully usable in this tab.",
+            variant: "destructive",
+          });
+        }
+        console.warn("TableTamer: could not persist table to localStorage:", error);
+      }
     } else {
-      localStorage.removeItem(STORAGE_KEY);
+      quotaWarnedRef.current = false;
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // ignore
+      }
     }
   }, [
     tableData.data,
@@ -236,6 +269,9 @@ export function TableProvider({ children }: { children: ReactNode }) {
     tableData.sortDirection,
     tableData.pageSize,
     tableData.hasData,
+    tableData.columns,
+    tableData.fileName,
+    toast,
   ]);
 
   // Helper functions
@@ -260,37 +296,19 @@ export function TableProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * Sorts table rows by the specified column and direction
-   * @param rows Array of data rows to sort
-   * @param column Column name to sort by
-   * @param direction Sort direction ("asc" or "desc")
-   * @returns Sorted array of rows
+   * Sorts table rows by the specified column using the column's detected type
+   * (TT-04). Blank cells always sort last; mixed columns fall back to a
+   * locale-aware numeric string compare.
    */
-  const sortRows = (rows: TableRow[], column: string | null, direction: "asc" | "desc") => {
+  const sortRows = (
+    rows: TableRow[],
+    column: string | null,
+    direction: "asc" | "desc",
+    columnTypes: Record<string, ColumnType>,
+  ) => {
     if (!column) return rows;
-
-    return [...rows].sort((a, b) => {
-      const valueA = a[column];
-      const valueB = b[column];
-
-      // Handle null/undefined values
-      if (valueA == null && valueB == null) return 0;
-      if (valueA == null) return direction === "asc" ? -1 : 1;
-      if (valueB == null) return direction === "asc" ? 1 : -1;
-
-      // Try to compare as numbers first
-      const numA = Number(valueA);
-      const numB = Number(valueB);
-
-      if (!isNaN(numA) && !isNaN(numB)) {
-        return direction === "asc" ? numA - numB : numB - numA;
-      }
-
-      // Fall back to string comparison
-      const strA = String(valueA).toLowerCase();
-      const strB = String(valueB).toLowerCase();
-      return direction === "asc" ? strA.localeCompare(strB) : strB.localeCompare(strA);
-    });
+    const type = columnTypes[column] ?? "string";
+    return sortRowsByType(rows, column, direction, type);
   };
 
   // Main actions
@@ -329,12 +347,12 @@ export function TableProvider({ children }: { children: ReactNode }) {
         Papa.parse(file, {
           header: true,
           skipEmptyLines: true,
-          dynamicTyping: true,
+          dynamicTyping: false, // TT-02: keep original strings; no silent coercion
           complete: (parseResult) => {
-            if (parseResult.errors.length > 0) {
-              reject(new Error(parseResult.errors[0].message));
-              return;
-            }
+            // TT-03: do not reject on per-row field-count errors. A single
+            // ragged row must not throw the whole file away. Only a parse
+            // error that leaves no usable data (e.g. an undetectable delimiter)
+            // should fail, and that is handled below once we have the rows.
             resolve(parseResult as Papa.ParseResult<TableRow>);
           },
           error: reject,
@@ -344,15 +362,35 @@ export function TableProvider({ children }: { children: ReactNode }) {
       const data = normalizeRows(result.data);
       const columns = getColumnsFromRows(data);
       if (data.length === 0 || columns.length === 0) {
-        throw new Error("No data found in CSV file");
+        // Nothing usable parsed — surface the first error if PapaParse gave one.
+        const firstError = result.errors[0];
+        throw new Error(firstError ? firstError.message : "No data found in CSV file");
       }
+
+      // TT-03: count rows that had a different number of fields and warn,
+      // without blocking the load.
+      const fieldCountErrors = result.errors.filter(
+        (e) => e.type === "FieldMismatch",
+      );
+      const affectedRows = new Set(
+        fieldCountErrors.map((e) => e.row).filter((r) => r !== undefined),
+      ).size;
+      if (affectedRows > 0) {
+        toast({
+          title: "Some rows had a different number of fields",
+          description: `${affectedRows} row${affectedRows === 1 ? "" : "s"} did not match the header. They were loaded anyway — check them.`,
+        });
+      }
+
       const columnVisibility = buildColumnVisibility(columns);
+      const columnTypes = detectColumnTypes(data, columns);
 
       setTableData((prev) => {
         const newState: TableData = {
           ...prev,
           data,
           columns,
+          columnTypes,
           columnVisibility,
           visibleColumns: columns,
           filteredRows: data,
@@ -416,10 +454,12 @@ export function TableProvider({ children }: { children: ReactNode }) {
       }));
 
       const columnVisibility = buildColumnVisibility(columns);
+      const columnTypes = detectColumnTypes(data, columns);
 
       setTableData({
         data,
         columns,
+        columnTypes,
         columnVisibility,
         visibleColumns: columns,
         filteredRows: data,
@@ -437,7 +477,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
         title: "Example data loaded",
         description: "Successfully loaded example data",
       });
-    } catch (error) {
+    } catch {
       setTableData((prev) => ({ ...prev, isLoading: false }));
       toast({
         title: "Error",
@@ -461,33 +501,23 @@ export function TableProvider({ children }: { children: ReactNode }) {
   };
 
   const toggleColumnVisibility = (column: string) => {
+    // TT-10: decide and toast outside the state updater so StrictMode's double
+    // invocation does not fire the toast twice.
+    const currentlyVisible = tableData.columnVisibility[column] !== false;
+    if (currentlyVisible && tableData.visibleColumns.length <= 1) {
+      toast({
+        title: "At least one column is required",
+        description: "Keep one column visible so the table remains usable.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setTableData((prev) => {
-      if (!prev.columnVisibility[column]) {
-        const newVisibility = {
-          ...prev.columnVisibility,
-          [column]: true,
-        };
-        return {
-          ...prev,
-          columnVisibility: newVisibility,
-          visibleColumns: getVisibleColumns(prev.columns, newVisibility),
-        };
-      }
-
-      if (prev.visibleColumns.length <= 1) {
-        toast({
-          title: "At least one column is required",
-          description: "Keep one column visible so the table remains usable.",
-          variant: "destructive",
-        });
-        return prev;
-      }
-
       const newVisibility = {
         ...prev.columnVisibility,
         [column]: !prev.columnVisibility[column],
       };
-
       return {
         ...prev,
         columnVisibility: newVisibility,
@@ -519,7 +549,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       const direction =
         prev.sortColumn === column ? (prev.sortDirection === "asc" ? "desc" : "asc") : "asc";
 
-      const filteredRows = sortRows(prev.filteredRows, column, direction);
+      const filteredRows = sortRows(prev.filteredRows, column, direction, prev.columnTypes);
 
       return {
         ...prev,
@@ -533,7 +563,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
   const updateSearch = (query: string) => {
     setTableData((prev) => {
       const filtered = filterRows(prev.data, query);
-      const sorted = sortRows(filtered, prev.sortColumn, prev.sortDirection);
+      const sorted = sortRows(filtered, prev.sortColumn, prev.sortDirection, prev.columnTypes);
 
       return {
         ...prev,
@@ -583,11 +613,18 @@ export function TableProvider({ children }: { children: ReactNode }) {
       };
       const updatedData = [...prev.data];
       updatedData[originalIndex] = updatedRow;
-      const filteredRows = sortRows(
-        filterRows(updatedData, prev.searchQuery),
-        prev.sortColumn,
-        prev.sortDirection,
-      );
+
+      // TT-08: keep the edited row where it is. Update it in place in the
+      // current filtered view instead of re-sorting, so it does not jump away.
+      // Re-apply the search filter so an edit that no longer matches drops out,
+      // but do not re-sort until the user sorts again.
+      let filteredRows: TableRow[];
+      if (prev.searchQuery.trim()) {
+        filteredRows = filterRows(updatedData, prev.searchQuery);
+      } else {
+        filteredRows = [...prev.filteredRows];
+        filteredRows[dataIndex] = updatedRow;
+      }
       const maxPage = Math.max(1, Math.ceil(filteredRows.length / prev.pageSize));
 
       return {
@@ -642,7 +679,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       const baseFileName = getBaseFileName(tableData.fileName);
       if (format === "csv") {
         downloadTextFile(
-          Papa.unparse(dataToExport),
+          Papa.unparse(dataToExport, { escapeFormulae: true }),
           `${baseFileName}_export.csv`,
           "text/csv;charset=utf-8;",
         );

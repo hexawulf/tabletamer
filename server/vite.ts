@@ -70,10 +70,29 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  // TT-09: hashed assets under /assets/ are immutable and cached for a year;
+  // the HTML shell is no-cache so a deploy is picked up.
+  app.use(
+    express.static(distPath, {
+      setHeaders: (res, filePath) => {
+        const rel = path.relative(distPath, filePath);
+        if (rel.startsWith("assets" + path.sep)) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        } else {
+          res.setHeader("Cache-Control", "no-cache");
+        }
+      },
+    }),
+  );
 
-  // fall through to index.html if the file doesn't exist
+  // A missing file under /assets/ must 404, not fall through to the SPA shell.
+  app.get("/assets/*", (_req, res) => {
+    res.status(404).type("text/plain").send("Not found");
+  });
+
+  // SPA fallback for everything else (no-cache HTML).
   app.use("*", (_req, res) => {
+    res.setHeader("Cache-Control", "no-cache");
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }

@@ -17,8 +17,8 @@ export function KeyboardShortcuts({ onClose }: KeyboardShortcutsProps) {
     { action: "Column Manager", keys: ["Ctrl", "M"] },
     { action: "Next Page", keys: ["→"] },
     { action: "Previous Page", keys: ["←"] },
-    { action: "Export as CSV", keys: ["Ctrl", "E"] },
-    { action: "Toggle Theme", keys: ["Ctrl", "D"] },
+    { action: "Export as CSV", keys: ["Alt", "Shift", "E"] },
+    { action: "Toggle Theme", keys: ["Alt", "Shift", "D"] },
   ];
 
   return (

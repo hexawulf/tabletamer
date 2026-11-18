@@ -66,7 +66,7 @@ export function TableView() {
     const maxVisible = 5;
 
     let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+    const endPage = Math.min(totalPages, startPage + maxVisible - 1);
 
     if (endPage - startPage + 1 < maxVisible) {
       startPage = Math.max(1, endPage - maxVisible + 1);
@@ -173,7 +173,12 @@ export function TableView() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => exportData("csv")}>Export as CSV</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => exportData("csv")}
+                title="Cells starting with = + - @ are prefixed so spreadsheets do not run them as formulas."
+              >
+                Export as CSV
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => exportData("json")}>Export as JSON</DropdownMenuItem>
               <DropdownMenuItem onClick={() => copyToClipboard()}>
                 Copy to clipboard

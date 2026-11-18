@@ -1,4 +1,4 @@
-import { MenuIcon, Settings, HelpCircle, Sun, Moon, Github } from "lucide-react";
+import { MenuIcon, Sun, Moon, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ui/theme-provider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
