@@ -1,129 +1,83 @@
 import express, { type Request, Response, NextFunction } from "express";
 import compression from "compression";
 import helmet from "helmet";
-import rateLimit from "express-rate-limit";
-import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import logger from "./src/logger";
 
 logger.info("✅ Winston logger initialized – startup check");
 
-const app = express();
+export function createApp() {
+  const app = express();
 
-// Trust proxy for rate limiting behind Nginx
-app.set("trust proxy", 1);
-const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? "")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+  // Behind nginx. No cookies/sessions, so trust proxy is only for correct
+  // client IPs in logs/errors.
+  app.set("trust proxy", 1);
+  app.disable("x-powered-by");
 
-// Compression middleware - compress all responses (level 6 is balanced for Pi)
-app.use(compression({ level: 6, threshold: 1024 }));
+  // Compression (level 6 is a good balance on a Pi).
+  app.use(compression({ level: 6, threshold: 1024 }));
 
-// Security headers via Helmet
-app.use(
-  helmet({
-    contentSecurityPolicy: process.env.NODE_ENV === "production" ? undefined : false,
-    crossOriginEmbedderPolicy: false, // Allow Vite HMR in dev
-  }),
-);
+  // Security headers. TT-09 dropped CORS and the no-op /api rate limiter: this
+  // app has no API, so both were dead surface area.
+  app.use(
+    helmet({
+      contentSecurityPolicy: process.env.NODE_ENV === "production" ? undefined : false,
+      crossOriginEmbedderPolicy: false, // allow Vite HMR in dev
+    }),
+  );
 
-// CORS configuration
-app.use(
-  cors({
-    origin: allowedOrigins.length > 0 ? allowedOrigins : true,
-    credentials: true,
-  }),
-);
+  app.use(express.json({ limit: "1mb" }));
+  app.use(express.urlencoded({ extended: false }));
 
-// Rate limiting for API routes
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: "Too many requests from this IP, please try again later.",
-});
+  return app;
+}
 
-app.use("/api/", apiLimiter);
-
-// Body parsing middleware
-app.use(express.json({ limit: "1mb" }));
-app.use(express.urlencoded({ extended: false }));
-
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
-  });
-
-  next();
-});
-
-(async () => {
+export async function buildServer() {
+  const app = createApp();
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+  // TT-09: there is no API. Any /api/* path gets a JSON 404 instead of falling
+  // through to the SPA shell with a 200.
+  app.all("/api/*", (_req, res) => {
+    res.status(404).json({ error: "Not found" });
+  });
 
-    logger.error("Unhandled request error", {
-      status,
-      message,
-      stack: err?.stack,
-    });
+  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    const e = err as { status?: number; statusCode?: number; message?: string; stack?: string };
+    const status = e.status || e.statusCode || 500;
+    const message = e.message || "Internal Server Error";
+    logger.error("Unhandled request error", { status, message, stack: e.stack });
     res.status(status).json({ message });
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // Only set up Vite in development, and after the API 404 so the catch-all
+  // SPA route does not shadow it.
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = process.env.PORT || 5000;
-  server.listen(
-    {
-      port: Number(port),
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
-      log(`serving on port ${port}`);
-    },
-  );
-})().catch((error) => {
-  logger.error("Failed to start server", {
-    message: error instanceof Error ? error.message : String(error),
-    stack: error instanceof Error ? error.stack : undefined,
-  });
-  process.exit(1);
-});
+  return server;
+}
+
+// Start only when run directly, so tests can import buildServer/createApp.
+const isMain = import.meta.url === `file://${process.argv[1]}`;
+if (isMain) {
+  buildServer()
+    .then((server) => {
+      const port = Number(process.env.PORT || 5000);
+      const host = process.env.HOST || "127.0.0.1";
+      server.listen({ port, host }, () => {
+        log(`serving on ${host}:${port}`);
+      });
+    })
+    .catch((error) => {
+      logger.error("Failed to start server", {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      process.exit(1);
+    });
+}
