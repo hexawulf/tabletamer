@@ -39,7 +39,9 @@ export async function buildServer() {
 
   // TT-09: there is no API. Any /api/* path gets a JSON 404 instead of falling
   // through to the SPA shell with a 200.
-  app.all("/api/*", (_req, res) => {
+  // Express 5 wildcard syntax: matches /api/ and /api/<anything>, like
+  // Express 4 "/api/*" did (bare /api still falls through to the SPA).
+  app.all("/api/{*splat}", (_req, res) => {
     res.status(404).json({ error: "Not found" });
   });
 

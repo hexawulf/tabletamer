@@ -18,7 +18,7 @@ let createdAsset = false;
 
 function buildTestApp() {
   const app = createApp();
-  app.all("/api/*", (_req, res) => res.status(404).json({ error: "Not found" }));
+  app.all("/api/{*splat}", (_req, res) => res.status(404).json({ error: "Not found" }));
   app.get("/healthz", (_req, res) => res.status(200).json({ status: "ok" }));
   serveStatic(app);
   return app;

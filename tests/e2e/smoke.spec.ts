@@ -99,9 +99,11 @@ test("uploaded CSV keeps raw values (no coercion)", async ({ page }) => {
 });
 
 test("unknown API and asset paths 404 instead of the SPA shell", async ({ request }) => {
-  const api = await request.get("/api/nope");
-  expect(api.status()).toBe(404);
-  expect(await api.json()).toEqual({ error: "Not found" });
+  for (const path of ["/api/", "/api/nope", "/api/a/b"]) {
+    const api = await request.get(path);
+    expect(api.status(), path).toBe(404);
+    expect(await api.json()).toEqual({ error: "Not found" });
+  }
 
   const asset = await request.get("/assets/does-not-exist.js");
   expect(asset.status()).toBe(404);
