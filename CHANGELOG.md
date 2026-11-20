@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-11-20
+
+### Added
+
+- Playwright smoke test (`npm run test:e2e`, 6 tests, headless Chromium)
+  against the production build (`node dist/index.js`): health check, CSP and
+  security headers, example data + search, CSV upload without value coercion,
+  `/api/*` and missing `/assets/*` 404s. Runs as its own CI job.
+  `npm run test:e2e:live` runs the same suite against tabletamer.piapps.dev.
+- `.github/dependabot.yml`: weekly npm (minor/patch grouped) and
+  GitHub Actions updates.
+- `SECURITY.md`: supported versions, private reporting, security architecture.
+
+### Changed
+
+- CI: all actions pinned to full commit SHAs on their Node 24 releases
+  (checkout v7.0.1, setup-node v7.1.0, upload-artifact v7.0.2);
+  `permissions: contents: read`, `persist-credentials: false`, concurrency
+  cancel, job timeouts; audit job on Node 24.
+
+### Known issues
+
+- TT-11: the piapps nginx vhost repeats headers helmet already sends
+  (`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`). The live
+  e2e run marks this as an expected failure until the vhost is fixed.
+
 ## [1.1.2] - 2026-11-18
 
 ### Removed

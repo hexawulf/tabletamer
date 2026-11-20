@@ -60,3 +60,8 @@ replit.nix
 # Bare *.bak does not match a dated suffix — see the mailserver leak, 2026-09-20.
 *.bak
 *.bak.*
+
+# Playwright
+playwright-report
+test-results
+blob-report

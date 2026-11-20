@@ -105,17 +105,19 @@ npm start          # NODE_ENV=production node dist/index.js
 
 ## Scripts
 
-| Script                  | What it does                                     |
-| ----------------------- | ------------------------------------------------ |
-| `npm run dev`           | Start the Express server with Vite in dev mode   |
-| `npm run build`         | Build the client with Vite and bundle the server |
-| `npm start`             | Run the production build from `dist/`            |
-| `npm test`              | Run the Vitest suite once                        |
-| `npm run test:watch`    | Run Vitest in watch mode                         |
-| `npm run test:coverage` | Run the tests with V8 coverage                   |
-| `npm run lint`          | ESLint (flat config)                             |
-| `npm run check`         | TypeScript type check (`tsc`)                    |
-| `npm run format`        | Format the project with Prettier                 |
+| Script                  | What it does                                       |
+| ----------------------- | -------------------------------------------------- |
+| `npm run dev`           | Start the Express server with Vite in dev mode     |
+| `npm run build`         | Build the client with Vite and bundle the server   |
+| `npm start`             | Run the production build from `dist/`              |
+| `npm test`              | Run the Vitest suite once                          |
+| `npm run test:watch`    | Run Vitest in watch mode                           |
+| `npm run test:coverage` | Run the tests with V8 coverage                     |
+| `npm run test:e2e`      | Playwright smoke test against the production build |
+| `npm run test:e2e:live` | Same smoke test against tabletamer.piapps.dev      |
+| `npm run lint`          | ESLint (flat config)                               |
+| `npm run check`         | TypeScript type check (`tsc`)                      |
+| `npm run format`        | Format the project with Prettier                   |
 
 A Husky pre-commit hook runs Prettier on staged files. CI (GitHub Actions, Node 22 and 24) runs lint, type check, tests and build on pushes to `main` and on pull requests, and a separate job runs `npm audit` on the production dependencies.
 
@@ -177,7 +179,7 @@ curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:5000/healthz   # 200
 - **Frontend:** React 18, TypeScript, Vite 7, Tailwind CSS 3, Radix UI primitives (shadcn/ui style), Lucide icons, Wouter
 - **Data:** PapaParse, browser `localStorage`, Clipboard API
 - **Server:** Express 4, Helmet, compression, Winston
-- **Tooling:** Vitest, Testing Library, Supertest, ESLint 9, Prettier, Husky, lint-staged, esbuild
+- **Tooling:** Vitest, Testing Library, Supertest, Playwright, ESLint 9, Prettier, Husky, lint-staged, esbuild
 
 ## Version history
 
@@ -185,6 +187,7 @@ See [CHANGELOG.md](CHANGELOG.md) for details.
 
 | Version   | Date       | Highlights                                                                                                  |
 | --------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
+| **1.2.0** | 2026-11-20 | Playwright smoke test in CI, SHA-pinned Node 24 actions, Dependabot, SECURITY.md                            |
 | **1.1.2** | 2026-11-18 | Removed unused server dependencies (`cors`, `express-rate-limit`)                                           |
 | **1.1.1** | 2026-11-18 | Fix: the server starts listening under pm2                                                                  |
 | **1.1.0** | 2026-11-18 | Audit fixes: no value coercion, type-aware sorting, storage-quota safety, formula-safe export, tests and CI |
@@ -198,7 +201,8 @@ Contributions are welcome. Keep changes small and tested:
 
 1. Fork the repository and create a branch.
 2. Make your change, and add a test when it changes behaviour.
-3. Run `npm run lint && npm run check && npm test && npm run build`.
+3. Run `npm run lint && npm run check && npm test && npm run build && npm run test:e2e`
+   (first time: `npx playwright install chromium`).
 4. Open a pull request.
 
 ## License
