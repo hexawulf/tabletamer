@@ -1,4 +1,5 @@
-import { MenuIcon, Sun, Moon, Github } from "lucide-react";
+import { MenuIcon, Sun, Moon } from "lucide-react";
+import { GithubIcon } from "@/components/icons/GithubIcon";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ui/theme-provider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -43,7 +44,7 @@ export function Header() {
                 rel="noreferrer noopener"
               >
                 <Button variant="ghost" size="icon" aria-label="View on GitHub">
-                  <Github className="h-5 w-5" />
+                  <GithubIcon className="h-5 w-5" />
                 </Button>
               </a>
             </TooltipTrigger>

@@ -48,6 +48,9 @@ test("app shell loads with security headers and no console errors", async ({ pag
 
   await expect(page).toHaveTitle("TableTamer");
   await expect(page.getByRole("heading", { name: "Welcome to TableTamer" })).toBeVisible();
+  // Header icons render (the GitHub mark is a local icon since lucide-react 1.x).
+  await expect(page.getByRole("button", { name: "View on GitHub" }).locator("svg")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Toggle theme" }).locator("svg")).toHaveCount(2);
   expect(appErrors(errors)).toEqual([]);
 });
 
