@@ -52,10 +52,8 @@ test("app shell loads with security headers and no console errors", async ({ pag
 });
 
 test("security headers are sent once", async ({ request }) => {
-  // TT-11: the piapps nginx vhost repeats headers helmet already sends
-  // (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection). Expected to
-  // fail live until those add_header lines are removed; then drop this guard.
-  test.fail(LIVE, "TT-11: nginx vhost duplicates helmet headers");
+  // TT-11 regression guard: nginx must not repeat headers helmet already
+  // sends (fixed on piapps 2026-11-20 by removing the vhost's add_header lines).
   const res = await request.get("/");
   const names = res.headersArray().map((h) => h.name.toLowerCase());
   for (const name of ["x-content-type-options", "x-frame-options", "x-xss-protection"]) {
