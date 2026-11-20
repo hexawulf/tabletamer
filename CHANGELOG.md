@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-11-20
+
+Dependency majors from Dependabot (#13–#16), reviewed and fixed by hand.
+
+### Changed
+
+- **Tailwind CSS 3 → 4.3** (supersedes #13) with **tailwind-merge 3** (supersedes
+  #15; v3 targets Tailwind 4 only). CSS-first config in `client/src/index.css`
+  (`tailwind.config.ts` removed), `@tailwindcss/postcss` replaces
+  `tailwindcss` + `autoprefixer`, `tw-animate-css` replaces the unmaintained
+  `tailwindcss-animate`. Kept the v3 look on purpose: v3 sans font stack, button
+  `cursor: pointer`, gray-400 placeholders, v3 border colour. Checked against
+  v3 with pixel diffs of 14 UI states (light/dark × empty, table, cell edit,
+  columns, export, shortcuts, about) at 1280 and 768 px: identical.
+- **Express 4 → 5.3** (supersedes #16): path-to-regexp v8 wildcard syntax
+  (`/api/{*splat}`, `/assets/{*splat}`, SPA fallback without `"*"`); routing is
+  unchanged. Production `npm audit` is now 0 (the `qs` advisories are gone).
+- **lucide-react 0.453 → 1.74** (supersedes #14): brand icons were removed in 1.x,
+  so the header GitHub icon is now a local `GithubIcon` with the same paths.
+- 18 minor/patch updates (#12), incl. Playwright 1.65, esbuild 0.28, Radix,
+  helmet 8.3, papaparse 5.7.
+
+### Fixed
+
+- Footer and About showed a hardcoded, stale version (v1.1.2). The version
+  now comes from `package.json` at build time (`__APP_VERSION__`).
+- The upgrade tool turned the pagination Button `variant="outline"` into
+  `"outline-solid"`; reverted (caught by `tsc`).
+- Empty state: removed a `mt-4` that v4's `space-y` would have added on top of
+  the 24 px gap. Footer links use `gap-x-4`, so a wrapped line on phones is no
+  longer indented.
+
 ## [1.2.1] - 2026-11-20
 
 ### Fixed

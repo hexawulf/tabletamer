@@ -24,7 +24,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 relative overflow-y-auto focus:outline-none">
+      <main className="flex-1 relative overflow-y-auto focus:outline-hidden">
         <div className="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
             <div className="flex items-center justify-center min-h-[400px]">
