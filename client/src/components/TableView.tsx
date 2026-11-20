@@ -136,9 +136,9 @@ export function TableView() {
   return (
     <div className="space-y-4">
       {/* Action bar */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col sm:flex-row justify-between space-y-4 sm:space-y-0">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 flex flex-col sm:flex-row justify-between space-y-4 sm:space-y-0">
         <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-          <div className="relative rounded-md shadow-sm max-w-xs">
+          <div className="relative rounded-md shadow-xs max-w-xs">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-gray-400" />
             </div>
@@ -194,7 +194,7 @@ export function TableView() {
       </div>
 
       {/* Table container */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table
             ref={tableRef}
@@ -351,7 +351,7 @@ export function TableView() {
               </Select>
 
               <nav
-                className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                className="relative z-0 inline-flex rounded-md shadow-xs -space-x-px"
                 aria-label="Pagination"
               >
                 <Button

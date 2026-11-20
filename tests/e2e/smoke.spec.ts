@@ -1,4 +1,7 @@
+import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
+
+const { version } = JSON.parse(readFileSync("package.json", "utf-8")) as { version: string };
 
 // `npm run test:e2e:live` runs the same suite against the public site, which
 // sits behind nginx and Cloudflare. Those layers differ from the bare app in
@@ -48,6 +51,8 @@ test("app shell loads with security headers and no console errors", async ({ pag
 
   await expect(page).toHaveTitle("TableTamer");
   await expect(page.getByRole("heading", { name: "Welcome to TableTamer" })).toBeVisible();
+  // Footer version comes from package.json at build time (__APP_VERSION__).
+  await expect(page.locator("footer")).toContainText(`TableTamer v${version}`);
   // Header icons render (the GitHub mark is a local icon since lucide-react 1.x).
   await expect(page.getByRole("button", { name: "View on GitHub" }).locator("svg")).toBeVisible();
   await expect(page.getByRole("button", { name: "Toggle theme" }).locator("svg")).toHaveCount(2);

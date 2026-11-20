@@ -18,7 +18,7 @@ export function Footer() {
 
   return (
     <>
-      <footer className="bg-white dark:bg-gray-800 shadow-sm border-t border-gray-200 dark:border-gray-700">
+      <footer className="bg-white dark:bg-gray-800 shadow-xs border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-gray-500 dark:text-gray-400">
             <div className="mb-2 sm:mb-0">
@@ -30,7 +30,7 @@ export function Footer() {
                 <span>No file loaded</span>
               )}
             </div>
-            <div className="flex flex-wrap space-x-4">
+            <div className="flex flex-wrap gap-x-4">
               <button
                 className="hover:text-primary-600 dark:hover:text-primary-400 flex items-center"
                 onClick={() => setShowKeyboardShortcuts(true)}
@@ -46,7 +46,7 @@ export function Footer() {
                 About
               </button>
               <span>|</span>
-              <span>TableTamer v1.1.2</span>
+              <span>TableTamer v{__APP_VERSION__}</span>
             </div>
           </div>
         </div>

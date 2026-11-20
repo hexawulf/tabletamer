@@ -176,9 +176,9 @@ curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:5000/healthz   # 200
 
 ## Tech stack
 
-- **Frontend:** React 18, TypeScript, Vite 7, Tailwind CSS 3, Radix UI primitives (shadcn/ui style), Lucide icons, Wouter
+- **Frontend:** React 18, TypeScript, Vite 7, Tailwind CSS 4, Radix UI primitives (shadcn/ui style), Lucide icons, Wouter
 - **Data:** PapaParse, browser `localStorage`, Clipboard API
-- **Server:** Express 4, Helmet, compression, Winston
+- **Server:** Express 5, Helmet, compression, Winston
 - **Tooling:** Vitest, Testing Library, Supertest, Playwright, ESLint 9, Prettier, Husky, lint-staged, esbuild
 
 ## Version history
@@ -187,6 +187,7 @@ See [CHANGELOG.md](CHANGELOG.md) for details.
 
 | Version   | Date       | Highlights                                                                                                  |
 | --------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
+| **1.3.0** | 2026-11-20 | Tailwind CSS 4, Express 5, lucide-react 1.x, tailwind-merge 3; version shown from package.json              |
 | **1.2.1** | 2026-11-20 | Fix: security headers sent once (nginx duplicates removed)                                                  |
 | **1.2.0** | 2026-11-20 | Playwright smoke test in CI, SHA-pinned Node 24 actions, Dependabot, SECURITY.md                            |
 | **1.1.2** | 2026-11-18 | Removed unused server dependencies (`cors`, `express-rate-limit`)                                           |

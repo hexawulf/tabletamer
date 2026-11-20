@@ -81,7 +81,7 @@ export function FileUpload() {
       </div>
 
       {/* Example data option */}
-      <div className="mt-4 text-center">
+      <div className="text-center">
         <button
           type="button"
           className="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
