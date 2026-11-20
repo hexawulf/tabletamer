@@ -187,6 +187,7 @@ See [CHANGELOG.md](CHANGELOG.md) for details.
 
 | Version   | Date       | Highlights                                                                                                  |
 | --------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
+| **1.2.1** | 2026-11-20 | Fix: security headers sent once (nginx duplicates removed)                                                  |
 | **1.2.0** | 2026-11-20 | Playwright smoke test in CI, SHA-pinned Node 24 actions, Dependabot, SECURITY.md                            |
 | **1.1.2** | 2026-11-18 | Removed unused server dependencies (`cors`, `express-rate-limit`)                                           |
 | **1.1.1** | 2026-11-18 | Fix: the server starts listening under pm2                                                                  |
