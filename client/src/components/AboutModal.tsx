@@ -75,9 +75,10 @@ export function AboutModal({ onClose }: AboutModalProps) {
 
         <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
           <h3 className="font-medium text-sm">Contact</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Author: 0xWulf</p>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Email:{" "}
+            <strong>Developer</strong>
+            <br />
+            Erling Wulf Weinreich (0xWulf) ·{" "}
             <a href="mailto:dev@0xwulf.dev" className="text-blue-600 hover:underline">
               dev@0xwulf.dev
             </a>
