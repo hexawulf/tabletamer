@@ -5,6 +5,64 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-11-24
+
+Canonical teal UI refresh and repository audit cleanup.
+
+### Changed
+
+- **Canonical teal palette & slate surfaces:** Migrated UI accents from blue to
+  the canonical 0xWulf teal palette (`#14B8A6` / `#0D9488` / `#0F766E` /
+  `#2DD4BF`) on slate surfaces across light and dark modes, with WCAG 2.1 AA
+  contrast on all primary (`5.55:1`), destructive (`6.42:1`), badge, and link
+  controls.
+- **Brand icons & favicons:** Replaced the header hamburger icon with the
+  canonical rounded-square teal `TT` SVG logo (`public/favicon.svg`,
+  `public/logo.svg`), regenerated all PNG/ICO favicon sizes, set
+  `theme-color: #0d9488`, and removed `maximum-scale=1` so mobile pinch-zoom
+  works.
+- **About modal & attribution:** Updated developer attribution (`dc4aebc`) and
+  streamlined the About modal with a compact header, 2-column feature grid, and
+  current tech stack.
+- **Table & mobile density:** Tightened cell padding for better desktop row
+  visibility, kept mobile action buttons on a single row, added `Page X of Y`
+  to mobile pagination, and listed `Ctrl+K` / `Esc` in the Keyboard Shortcuts
+  dialog.
+- **Bundle splitting:** Replaced object-form `manualChunks` with a function so
+  `react-vendor` splits cleanly (eliminating the empty 0-byte chunk warning)
+  and shrank total client JS by 26 kB (`table-vendor` -63.5%).
+
+### Fixed
+
+- **About modal off-screen clipping:** Added `max-h-[85vh] overflow-y-auto` to
+  `DialogContent` so the modal header and `Close` button stay reachable on
+  standard laptop and mobile viewports (guarded by a new Playwright E2E test).
+- **Dark-mode 404 page:** Replaced hardcoded light-only `bg-gray-50` /
+  `text-gray-900` classes and router boilerplate copy in `NotFound` with
+  theme-aware tokens and a link back to TableTamer.
+- **Dead Tailwind `primary-NNN` classes:** Replaced unconfigured
+  `*-primary-{50..900}` classes so the `CSV Tool` pill, active sort arrows,
+  dropzone highlights, and footer hovers render properly.
+- **System-theme toggle:** Resolved `"system"` theme in `ThemeProvider` so the
+  first toggle click always switches themes immediately.
+- **Undeclared `nanoid` import:** Replaced `nanoid` in `server/vite.ts` with
+  Node's built-in `crypto.randomUUID()`.
+
+### Removed
+
+- Dead files: `.codex`, `client/src/hooks/use-mobile.tsx`,
+  `client/src/lib/queryClient.ts` (and unused `QueryClientProvider` wrapper).
+- Unused dependencies: `@tanstack/react-query`, `@tailwindcss/typography`,
+  `@vitejs/plugin-react`, and `bufferutil` (-42 lockfile packages; eliminates
+  `postcss-selector-parser` dev advisories).
+- Stale ESLint ignores/globs (`drizzle.config.ts`, `shared/**`) and internal
+  hostname mentions in `README.md` and `tests/e2e/smoke.spec.ts`.
+
+### Docs
+
+- Updated `README.md` version badge and refreshed `screenshots/tabletamer.png`
+  against the teal UI; updated `SECURITY.md` supported versions to `1.3.x`.
+
 ## [1.3.0] - 2026-11-20
 
 Dependency majors from Dependabot (#13–#16), reviewed and fixed by hand.

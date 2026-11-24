@@ -42,7 +42,7 @@ export function CellEditor({ onClose }: CellEditorProps) {
             value={localValue}
             onChange={(e) => setLocalValue(e.target.value)}
             rows={3}
-            className="w-full resize-none"
+            className="w-full resize-none font-mono text-sm"
           />
           <div className="flex flex-wrap gap-2">
             <Button

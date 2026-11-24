@@ -13,7 +13,6 @@ export default tseslint.config(
       "node_modules/**",
       "public/**",
       "screenshots/**",
-      "drizzle.config.ts",
       "vite.config.ts",
       "postcss.config.js",
       "client/src/components/ui/**", // generated shadcn primitives
@@ -39,7 +38,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["server/**/*.ts", "shared/**/*.ts"],
+    files: ["server/**/*.ts"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module",

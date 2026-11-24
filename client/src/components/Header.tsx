@@ -1,30 +1,36 @@
-import { MenuIcon, Sun, Moon } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import { GithubIcon } from "@/components/icons/GithubIcon";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ui/theme-provider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function Header() {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-xs border-b border-gray-200 dark:border-gray-700">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+    <header className="bg-card shadow-xs border-b border-border">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <MenuIcon className="h-8 w-8 text-primary" />
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">TableTamer</h1>
-          <span className="px-2 py-1 text-xs rounded-full bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200 font-medium">
+          <img
+            src="/favicon.svg"
+            alt="TableTamer"
+            width={32}
+            height={32}
+            className="h-8 w-8 rounded-lg shrink-0"
+          />
+          <h1 className="text-xl font-bold tracking-tight text-foreground">TableTamer</h1>
+          <span className="px-2.5 py-0.5 text-xs rounded-full bg-teal-50 text-teal-800 border border-teal-200 dark:bg-teal-950/80 dark:text-teal-300 dark:border-teal-800/80 font-medium">
             CSV Tool
           </span>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
                 aria-label="Toggle theme"
               >
                 <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

@@ -23,17 +23,17 @@ export function ColumnManager({ onClose }: ColumnManagerProps) {
         <DialogHeader>
           <DialogTitle>Manage Columns</DialogTitle>
         </DialogHeader>
-        <div className="mt-2">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="mt-1">
+          <p className="text-sm text-muted-foreground">
             Select which columns to display in the table.
           </p>
 
-          <div className="mt-4 max-h-96 overflow-y-auto">
-            <ul className="space-y-2">
+          <div className="mt-3 max-h-80 overflow-y-auto">
+            <ul className="space-y-1.5">
               {columns.map((column, index) => (
                 <li
                   key={column}
-                  className="flex items-center justify-between p-2 rounded-md bg-gray-50 dark:bg-gray-700"
+                  className="flex items-center justify-between px-3 py-2 rounded-md border border-border bg-muted/40"
                 >
                   <div className="flex items-center">
                     <Checkbox
@@ -43,7 +43,7 @@ export function ColumnManager({ onClose }: ColumnManagerProps) {
                     />
                     <label
                       htmlFor={`column-${index}`}
-                      className="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300 max-w-xs truncate"
+                      className="ml-3 block text-sm font-medium text-foreground max-w-xs truncate cursor-pointer"
                     >
                       {column}
                     </label>

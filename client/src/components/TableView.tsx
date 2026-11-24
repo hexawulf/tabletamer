@@ -134,41 +134,41 @@ export function TableView() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Action bar */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 flex flex-col sm:flex-row justify-between space-y-4 sm:space-y-0">
-        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-          <div className="relative rounded-md shadow-xs max-w-xs">
+      <div className="bg-card border border-border rounded-lg shadow-xs p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+          <div className="relative rounded-md w-full sm:w-64">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-gray-400" />
+              <Search className="h-4 w-4 text-muted-foreground" />
             </div>
             <Input
               id="table-search-input"
               type="text"
               placeholder="Search data..."
-              className="pl-10"
+              className="pl-9 h-9 bg-background"
               value={searchQuery}
               onChange={(e) => updateSearch(e.target.value)}
             />
           </div>
 
           <div className="flex items-center">
-            <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">
               {filteredRowCount} of {totalRowCount} rows
             </span>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowColumnManager(true)}>
-            <Rows3 className="h-4 w-4 mr-2" />
+            <Rows3 className="h-4 w-4" />
             Columns
           </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
+                <Download className="h-4 w-4" />
                 Export
               </Button>
             </DropdownMenuTrigger>
@@ -187,85 +187,90 @@ export function TableView() {
           </DropdownMenu>
 
           <Button size="sm" onClick={clearData}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className="h-4 w-4" />
             New File
           </Button>
         </div>
       </div>
 
       {/* Table container */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-card border border-border rounded-lg shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table
-            ref={tableRef}
-            className="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
-          >
-            <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
+          <table ref={tableRef} className="min-w-full divide-y divide-border">
+            <thead className="bg-slate-50 dark:bg-slate-950/70 sticky top-0">
               <tr>
-                {visibleColumns.map((column, columnIndex) => (
-                  <th
-                    key={column}
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap cursor-pointer group"
-                    style={{
-                      width: columnWidths[columnIndex]
-                        ? `${columnWidths[columnIndex]}px`
-                        : undefined,
-                      position: "relative",
-                    }}
-                    onClick={() => updateSort(column)}
-                    aria-sort={
-                      sortColumn !== column
-                        ? "none"
-                        : sortDirection === "asc"
-                          ? "ascending"
-                          : "descending"
-                    }
-                  >
-                    <div className="flex items-center relative">
-                      <span className="max-w-xs truncate" title={column}>
-                        {column}
-                      </span>
+                {visibleColumns.map((column, columnIndex) => {
+                  const isSorted = sortColumn === column;
+                  return (
+                    <th
+                      key={column}
+                      className={`px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap cursor-pointer select-none group transition-colors ${
+                        isSorted
+                          ? "text-teal-800 dark:text-teal-300"
+                          : "text-slate-600 dark:text-slate-300 hover:text-foreground"
+                      }`}
+                      style={{
+                        width: columnWidths[columnIndex]
+                          ? `${columnWidths[columnIndex]}px`
+                          : undefined,
+                        position: "relative",
+                      }}
+                      onClick={() => updateSort(column)}
+                      aria-sort={
+                        !isSorted ? "none" : sortDirection === "asc" ? "ascending" : "descending"
+                      }
+                    >
+                      <div className="flex items-center relative">
+                        <span className="max-w-xs truncate" title={column}>
+                          {column}
+                        </span>
 
-                      {/* Sort indicators */}
-                      <span className="ml-2 flex-none">
-                        <ArrowUp
-                          className={`h-3 w-3 transition-opacity ${
-                            sortColumn === column && sortDirection === "asc"
-                              ? "opacity-100 text-primary-500"
-                              : "opacity-0 group-hover:opacity-50 text-gray-400"
-                          }`}
-                        />
-                        <ArrowDown
-                          className={`h-3 w-3 -mt-1 transition-opacity ${
-                            sortColumn === column && sortDirection === "desc"
-                              ? "opacity-100 text-primary-500"
-                              : "opacity-0 group-hover:opacity-50 text-gray-400"
-                          }`}
-                        />
-                      </span>
+                        {/* Sort indicators */}
+                        <span className="ml-1.5 flex-none">
+                          <ArrowUp
+                            className={`h-3 w-3 transition-opacity ${
+                              isSorted && sortDirection === "asc"
+                                ? "opacity-100 text-teal-700 dark:text-teal-400"
+                                : "opacity-0 group-hover:opacity-50 text-muted-foreground"
+                            }`}
+                          />
+                          <ArrowDown
+                            className={`h-3 w-3 -mt-1 transition-opacity ${
+                              isSorted && sortDirection === "desc"
+                                ? "opacity-100 text-teal-700 dark:text-teal-400"
+                                : "opacity-0 group-hover:opacity-50 text-muted-foreground"
+                            }`}
+                          />
+                        </span>
 
-                      {/* Resizer handle */}
-                      <div
-                        className="absolute right-0 top-0 h-full w-1 cursor-col-resize bg-gray-400 dark:bg-gray-600 opacity-0 group-hover:opacity-50 hover:opacity-100"
-                        onMouseDown={(e) => startResizing(e, columnIndex)}
-                      />
-                    </div>
-                  </th>
-                ))}
+                        {/* Resizer handle */}
+                        <div
+                          className="absolute right-0 top-0 h-full w-1 cursor-col-resize bg-slate-400 dark:bg-slate-600 hover:bg-teal-500 opacity-0 group-hover:opacity-60 hover:opacity-100"
+                          onMouseDown={(e) => startResizing(e, columnIndex)}
+                        />
+                      </div>
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-card divide-y divide-border">
               {paginatedRows.length > 0 ? (
                 paginatedRows.map((row, rowIndex) => (
-                  <tr key={rowIndex} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <tr
+                    key={rowIndex}
+                    className="hover:bg-teal-50/50 dark:hover:bg-teal-950/25 transition-colors"
+                  >
                     {visibleColumns.map((column) => (
                       <td
                         key={`${rowIndex}-${column}`}
-                        className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-800 dark:text-gray-200 cursor-pointer"
+                        className="px-4 py-2.5 whitespace-nowrap text-sm font-mono text-slate-800 dark:text-slate-200 cursor-pointer"
                         onClick={() => handleCellEdit(rowIndex, column)}
                       >
                         <span
-                          className={!row[column] ? "text-gray-400 dark:text-gray-500 italic" : ""}
+                          className={
+                            !row[column] ? "text-slate-400 dark:text-slate-500 italic" : ""
+                          }
                         >
                           {row[column] !== null && row[column] !== undefined
                             ? String(row[column])
@@ -279,14 +284,14 @@ export function TableView() {
                 <tr>
                   <td
                     colSpan={visibleColumns.length}
-                    className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
+                    className="px-6 py-12 text-center text-muted-foreground"
                   >
                     <div className="flex flex-col items-center">
-                      <FileSearch className="h-12 w-12 mb-3" />
+                      <FileSearch className="h-12 w-12 mb-3 text-slate-400 dark:text-slate-500" />
                       <p>No matching records found</p>
                       <Button
                         variant="link"
-                        className="mt-2 text-primary-600 dark:text-primary-400 text-sm"
+                        className="mt-2 text-teal-700 dark:text-teal-400 text-sm"
                         onClick={() => updateSearch("")}
                       >
                         Clear filters
@@ -300,41 +305,44 @@ export function TableView() {
         </div>
 
         {/* Pagination */}
-        <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
-          <div className="flex-1 flex justify-between sm:hidden">
+        <div className="bg-card px-4 py-3 flex items-center justify-between border-t border-border sm:px-6">
+          <div className="flex-1 flex items-center justify-between sm:hidden">
             <Button
               variant="outline"
+              size="sm"
               disabled={currentPage === 1}
               onClick={() => updateCurrentPage(currentPage - 1)}
-              className={currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""}
             >
               Previous
             </Button>
+            <span className="text-xs text-muted-foreground">
+              Page {currentPage} of {totalPages}
+            </span>
             <Button
               variant="outline"
+              size="sm"
               disabled={currentPage === totalPages}
               onClick={() => updateCurrentPage(currentPage + 1)}
-              className={currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""}
             >
               Next
             </Button>
           </div>
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
+              <p className="text-sm text-muted-foreground">
                 Showing{" "}
-                <span className="font-medium">
+                <span className="font-medium text-foreground">
                   {filteredRowCount === 0 ? 0 : (currentPage - 1) * pageSize + 1}
                 </span>{" "}
                 to{" "}
-                <span className="font-medium">
+                <span className="font-medium text-foreground">
                   {Math.min(currentPage * pageSize, filteredRowCount)}
                 </span>{" "}
-                of <span className="font-medium">{filteredRowCount}</span> results
+                of <span className="font-medium text-foreground">{filteredRowCount}</span> results
               </p>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-500 dark:text-gray-400">Rows per page:</span>
+              <span className="text-sm text-muted-foreground">Rows per page:</span>
               <Select
                 value={String(pageSize)}
                 onValueChange={(value) => updatePageSize(Number(value))}
@@ -357,7 +365,7 @@ export function TableView() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="rounded-l-md"
+                  className="h-8 w-8 rounded-r-none"
                   disabled={currentPage === 1}
                   onClick={() => updateCurrentPage(1)}
                 >
@@ -367,6 +375,7 @@ export function TableView() {
                 <Button
                   variant="outline"
                   size="icon"
+                  className="h-8 w-8 rounded-none"
                   disabled={currentPage === 1}
                   onClick={() => updateCurrentPage(currentPage - 1)}
                 >
@@ -380,7 +389,7 @@ export function TableView() {
                     key={page}
                     variant={page === currentPage ? "default" : "outline"}
                     onClick={() => updateCurrentPage(page)}
-                    className="hidden sm:inline-flex"
+                    className="hidden sm:inline-flex h-8 min-w-8 px-2.5 rounded-none"
                   >
                     {page}
                   </Button>
@@ -389,6 +398,7 @@ export function TableView() {
                 <Button
                   variant="outline"
                   size="icon"
+                  className="h-8 w-8 rounded-none"
                   disabled={currentPage === totalPages}
                   onClick={() => updateCurrentPage(currentPage + 1)}
                 >
@@ -398,7 +408,7 @@ export function TableView() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="rounded-r-md"
+                  className="h-8 w-8 rounded-l-none"
                   disabled={currentPage === totalPages}
                   onClick={() => updateCurrentPage(totalPages)}
                 >

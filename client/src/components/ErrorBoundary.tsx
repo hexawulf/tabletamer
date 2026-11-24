@@ -22,17 +22,14 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
-    // Update state so the next render will show the fallback UI
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Log the error to console or an error reporting service
     console.error("Error caught by ErrorBoundary:", error, errorInfo);
   }
 
   handleReset = (): void => {
-    // Clear localStorage and reload the page
     localStorage.removeItem("tableTamerData");
     window.location.reload();
   };
@@ -40,26 +37,20 @@ class ErrorBoundary extends Component<Props, State> {
   render(): ReactNode {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-          <div className="max-w-md w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 text-center">
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+          <div className="max-w-md w-full bg-card border border-border shadow-lg rounded-lg p-8 text-center">
             <div className="flex justify-center mb-4">
-              <AlertTriangle className="h-16 w-16 text-red-500" />
+              <AlertTriangle className="h-14 w-14 text-destructive" />
             </div>
-            <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-100">
-              Something went wrong
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {this.state.error?.message || 
-               "An unexpected error occurred in the application."}
+            <h1 className="text-2xl font-bold mb-2 text-foreground">Something went wrong</h1>
+            <p className="text-muted-foreground mb-6">
+              {this.state.error?.message || "An unexpected error occurred in the application."}
             </p>
             <div className="space-y-3">
-              <Button 
-                onClick={this.handleReset} 
-                className="w-full"
-              >
+              <Button onClick={this.handleReset} className="w-full">
                 Reset Application
               </Button>
-              <p className="text-sm text-gray-500 dark:text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 This will clear all data and restart the application.
               </p>
             </div>
