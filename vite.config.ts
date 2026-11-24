@@ -20,7 +20,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
-      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
     },
   },
   root: path.resolve(import.meta.dirname, "client"),
@@ -29,26 +28,30 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          // React core - changes rarely, cache aggressively
-          "react-vendor": ["react", "react-dom", "react/jsx-runtime"],
-
-          // Table/data libs - moderate change frequency
-          "table-vendor": ["@tanstack/react-query", "papaparse"],
-
-          // Radix UI primitives still in use - change rarely
-          "ui-vendor": [
-            "@radix-ui/react-checkbox",
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-select",
-            "@radix-ui/react-slot",
-            "@radix-ui/react-toast",
-            "@radix-ui/react-tooltip",
-          ],
-
-          // Utility libraries - rarely change
-          "utils-vendor": ["clsx", "tailwind-merge", "class-variance-authority", "lucide-react"],
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
+          if (
+            id.includes("/node_modules/react/") ||
+            id.includes("/node_modules/react-dom/") ||
+            id.includes("/node_modules/scheduler/")
+          ) {
+            return "react-vendor";
+          }
+          if (id.includes("/node_modules/papaparse/")) {
+            return "table-vendor";
+          }
+          if (id.includes("/node_modules/@radix-ui/")) {
+            return "ui-vendor";
+          }
+          if (
+            id.includes("/node_modules/clsx/") ||
+            id.includes("/node_modules/tailwind-merge/") ||
+            id.includes("/node_modules/class-variance-authority/") ||
+            id.includes("/node_modules/lucide-react/")
+          ) {
+            return "utils-vendor";
+          }
+          return undefined;
         },
       },
     },
