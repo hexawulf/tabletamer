@@ -103,6 +103,37 @@ test("uploaded CSV keeps raw values (no coercion)", async ({ page }) => {
   await expect(body).toContainText("12345678901234567890");
 });
 
+test("robots.txt and sitemap.xml are served as static crawl files", async ({ request }) => {
+  const robots = await request.get("/robots.txt");
+  expect(robots.status()).toBe(200);
+  expect(robots.headers()["content-type"]).toMatch(/text\/plain/);
+  const robotsBody = await robots.text();
+  expect(robotsBody).toContain("User-agent: *");
+  expect(robotsBody).toContain("Allow: /");
+  expect(robotsBody).toContain("Sitemap: https://tabletamer.piapps.dev/sitemap.xml");
+  expect(robotsBody).not.toMatch(/<html/i);
+
+  const sitemap = await request.get("/sitemap.xml");
+  expect(sitemap.status()).toBe(200);
+  expect(sitemap.headers()["content-type"]).toMatch(/xml/);
+  const sitemapBody = await sitemap.text();
+  expect(sitemapBody).toContain('<?xml version="1.0" encoding="UTF-8"?>');
+  expect(sitemapBody).toContain("<loc>https://tabletamer.piapps.dev/</loc>");
+  expect(sitemapBody).not.toMatch(/<html/i);
+});
+
+test("homepage has a canonical URL and a description", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    "https://tabletamer.piapps.dev/",
+  );
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+    "content",
+    "Turn a CSV file into a table you can search, sort, edit, and export, all in your browser.",
+  );
+});
+
 test("unknown API and asset paths 404 instead of the SPA shell", async ({ request }) => {
   for (const path of ["/api/", "/api/nope", "/api/a/b"]) {
     const api = await request.get(path);
