@@ -61,7 +61,7 @@ test("app shell loads with security headers and no console errors", async ({ pag
 
 test("security headers are sent once", async ({ request }) => {
   // TT-11 regression guard: nginx must not repeat headers helmet already
-  // sends (fixed on piapps 2026-11-20 by removing the vhost's add_header lines).
+  // sends (fixed 2026-11-20 by removing the vhost's add_header lines).
   const res = await request.get("/");
   const names = res.headersArray().map((h) => h.name.toLowerCase());
   for (const name of ["x-content-type-options", "x-frame-options", "x-xss-protection"]) {
@@ -112,4 +112,23 @@ test("unknown API and asset paths 404 instead of the SPA shell", async ({ reques
 
   const asset = await request.get("/assets/does-not-exist.js");
   expect(asset.status()).toBe(404);
+});
+
+test("teal SVG favicon loads and About modal closes cleanly", async ({ page, request }) => {
+  test.skip(LIVE, "checked locally until the teal UI refresh is deployed");
+
+  const icon = await request.get("/favicon.svg");
+  expect(icon.status()).toBe(200);
+  expect(icon.headers()["content-type"]).toContain("image/svg+xml");
+
+  const errors = watchErrors(page);
+  await page.goto("/");
+  await page.getByRole("button", { name: /about/i }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText(`TableTamer v${version}`);
+  // Regression guard: Close button must stay inside viewport and be clickable.
+  await dialog.getByRole("button", { name: "Close" }).first().click();
+  await expect(dialog).toBeHidden();
+  expect(appErrors(errors)).toEqual([]);
 });

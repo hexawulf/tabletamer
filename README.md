@@ -3,7 +3,7 @@
 **Turn a CSV file into a table you can search, sort, edit and export, all in your browser.**
 
 <p>
-  <img src="https://img.shields.io/badge/version-1.1.2-blue" alt="v1.1.2" />
+  <img src="https://img.shields.io/badge/version-1.3.0-0D9488" alt="v1.3.0" />
   <img src="https://img.shields.io/badge/node-%E2%89%A522-339933?logo=node.js&logoColor=white" alt="Node 22+" />
   <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" alt="React 18" />
   <img src="https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white" alt="Vite 7" />
@@ -147,7 +147,7 @@ ecosystem.config.cjs pm2 process definition
 
 ## Deployment
 
-TableTamer runs on piapps under pm2, behind nginx with TLS.
+TableTamer runs under pm2 behind nginx with TLS.
 
 ```bash
 git pull --ff-only origin main
