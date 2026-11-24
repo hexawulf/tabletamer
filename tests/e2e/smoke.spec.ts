@@ -115,8 +115,6 @@ test("unknown API and asset paths 404 instead of the SPA shell", async ({ reques
 });
 
 test("teal SVG favicon loads and About modal closes cleanly", async ({ page, request }) => {
-  test.skip(LIVE, "checked locally until the teal UI refresh is deployed");
-
   const icon = await request.get("/favicon.svg");
   expect(icon.status()).toBe(200);
   expect(icon.headers()["content-type"]).toContain("image/svg+xml");

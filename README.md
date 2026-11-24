@@ -3,7 +3,7 @@
 **Turn a CSV file into a table you can search, sort, edit and export, all in your browser.**
 
 <p>
-  <img src="https://img.shields.io/badge/version-1.3.0-0D9488" alt="v1.3.0" />
+  <img src="https://img.shields.io/badge/version-1.3.1-0D9488" alt="v1.3.1" />
   <img src="https://img.shields.io/badge/node-%E2%89%A522-339933?logo=node.js&logoColor=white" alt="Node 22+" />
   <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" alt="React 18" />
   <img src="https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white" alt="Vite 7" />
@@ -187,6 +187,7 @@ See [CHANGELOG.md](CHANGELOG.md) for details.
 
 | Version   | Date       | Highlights                                                                                                  |
 | --------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
+| **1.3.1** | 2026-11-24 | Canonical teal UI + `TT` favicons, WCAG AA contrast, About modal & 404 fixes, dead code & bundle cleanup    |
 | **1.3.0** | 2026-11-20 | Tailwind CSS 4, Express 5, lucide-react 1.x, tailwind-merge 3; version shown from package.json              |
 | **1.2.1** | 2026-11-20 | Fix: security headers sent once (nginx duplicates removed)                                                  |
 | **1.2.0** | 2026-11-20 | Playwright smoke test in CI, SHA-pinned Node 24 actions, Dependabot, SECURITY.md                            |
