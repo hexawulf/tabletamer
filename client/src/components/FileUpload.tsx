@@ -30,20 +30,23 @@ export function FileUpload() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-6 py-12">
+    <div className="flex flex-col items-center justify-center space-y-6 py-10 sm:py-12">
       <div className="text-center space-y-2 max-w-md">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome to TableTamer</h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">Welcome to TableTamer</h2>
+        <p className="text-muted-foreground">
           Import your CSV file to get started. Drag and drop or click below to upload.
         </p>
       </div>
 
       {/* File drop zone */}
       <div
-        className={`w-full max-w-lg border-2 border-dashed rounded-lg p-12 text-center hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-150 cursor-pointer group ${
+        role="button"
+        tabIndex={0}
+        aria-label="Upload CSV file"
+        className={`w-full max-w-lg border-2 border-dashed rounded-xl p-10 sm:p-12 text-center bg-card shadow-xs transition duration-150 cursor-pointer group focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
           isHovering
-            ? "border-primary-400 bg-primary-50 dark:bg-primary-900/20"
-            : "border-gray-300 dark:border-gray-700"
+            ? "border-teal-500 bg-teal-50/70 dark:bg-teal-950/30"
+            : "border-slate-300 dark:border-slate-700 hover:border-teal-500 dark:hover:border-teal-500 hover:bg-teal-50/40 dark:hover:bg-teal-950/20"
         }`}
         onDragOver={(e) => {
           e.preventDefault();
@@ -55,19 +58,27 @@ export function FileUpload() {
         }}
         onDrop={handleFileDrop}
         onClick={triggerFileInput}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            triggerFileInput();
+          }
+        }}
       >
         <div className="space-y-4">
           <div className="flex justify-center">
-            <CloudUploadIcon className="h-16 w-16 text-gray-400 group-hover:text-primary-500 dark:text-gray-500 dark:group-hover:text-primary-400 transition duration-150" />
+            <CloudUploadIcon className="h-14 w-14 text-slate-400 group-hover:text-teal-600 dark:text-slate-500 dark:group-hover:text-teal-400 transition duration-150" />
           </div>
           <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              <span className="font-medium text-primary-600 dark:text-primary-400">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-semibold text-teal-700 dark:text-teal-400">
                 Click to upload
               </span>{" "}
               or drag and drop
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">CSV files only</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              CSV files only · processed locally in your browser
+            </p>
           </div>
         </div>
         <input
@@ -84,10 +95,10 @@ export function FileUpload() {
       <div className="text-center">
         <button
           type="button"
-          className="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
+          className="inline-flex items-center text-sm font-medium text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300 underline-offset-4 hover:underline transition-colors"
           onClick={() => loadExampleData()}
         >
-          <PlayCircleIcon className="mr-1 h-4 w-4" /> Or try with example data
+          <PlayCircleIcon className="mr-1.5 h-4 w-4" /> Or try with example data
         </button>
       </div>
     </div>

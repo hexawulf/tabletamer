@@ -13,7 +13,7 @@ export function useKeyboardShortcuts({
 }: UseKeyboardShortcutsProps) {
   const { hasData, updateCurrentPage, currentPage, totalPages, exportData, updateSearch } =
     useTableContext();
-  const { setTheme, theme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
 
   useEffect(() => {
     const isTypingTarget = (target: EventTarget | null) => {
@@ -71,7 +71,7 @@ export function useKeyboardShortcuts({
       // Alt + Shift + D for dark mode toggle (Ctrl/Cmd+D is bookmark)
       if (event.altKey && event.shiftKey && key === "d") {
         event.preventDefault();
-        setTheme(theme === "dark" ? "light" : "dark");
+        setTheme(resolvedTheme === "dark" ? "light" : "dark");
         return;
       }
 
@@ -105,7 +105,7 @@ export function useKeyboardShortcuts({
     hasData,
     currentPage,
     totalPages,
-    theme,
+    resolvedTheme,
     updateCurrentPage,
     exportData,
     updateSearch,

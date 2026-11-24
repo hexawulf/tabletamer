@@ -18,34 +18,38 @@ export function Footer() {
 
   return (
     <>
-      <footer className="bg-white dark:bg-gray-800 shadow-xs border-t border-gray-200 dark:border-gray-700">
+      <footer className="bg-card shadow-xs border-t border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground">
             <div className="mb-2 sm:mb-0">
               {fileName ? (
-                <span className="font-medium text-gray-600 dark:text-gray-300">
-                  Current file: {fileName}
-                </span>
+                <span className="font-medium text-foreground">Current file: {fileName}</span>
               ) : (
                 <span>No file loaded</span>
               )}
             </div>
-            <div className="flex flex-wrap gap-x-4">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
               <button
-                className="hover:text-primary-600 dark:hover:text-primary-400 flex items-center"
+                type="button"
+                className="text-muted-foreground hover:text-teal-700 dark:hover:text-teal-400 transition-colors flex items-center"
                 onClick={() => setShowKeyboardShortcuts(true)}
               >
                 Keyboard Shortcuts
               </button>
-              <span>|</span>
+              <span aria-hidden="true" className="text-border">
+                |
+              </span>
               <button
-                className="hover:text-primary-600 dark:hover:text-primary-400 flex items-center"
+                type="button"
+                className="text-muted-foreground hover:text-teal-700 dark:hover:text-teal-400 transition-colors flex items-center"
                 onClick={() => setShowAbout(true)}
               >
                 <InfoIcon className="h-3.5 w-3.5 mr-1" />
                 About
               </button>
-              <span>|</span>
+              <span aria-hidden="true" className="text-border">
+                |
+              </span>
               <span>TableTamer v{__APP_VERSION__}</span>
             </div>
           </div>

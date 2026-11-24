@@ -13,12 +13,14 @@ interface KeyboardShortcutsProps {
 
 export function KeyboardShortcuts({ onClose }: KeyboardShortcutsProps) {
   const shortcuts = [
-    { action: "Search", keys: ["Ctrl", "F"] },
+    { action: "Focus search", keys: ["Ctrl", "F"] },
     { action: "Column Manager", keys: ["Ctrl", "M"] },
-    { action: "Next Page", keys: ["→"] },
-    { action: "Previous Page", keys: ["←"] },
+    { action: "Shortcuts dialog", keys: ["Ctrl", "K"] },
     { action: "Export as CSV", keys: ["Alt", "Shift", "E"] },
     { action: "Toggle Theme", keys: ["Alt", "Shift", "D"] },
+    { action: "Next Page", keys: ["→"] },
+    { action: "Previous Page", keys: ["←"] },
+    { action: "Clear search", keys: ["Esc"] },
   ];
 
   return (
@@ -27,20 +29,20 @@ export function KeyboardShortcuts({ onClose }: KeyboardShortcutsProps) {
         <DialogHeader>
           <DialogTitle>Keyboard Shortcuts</DialogTitle>
         </DialogHeader>
-        <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+        <div className="space-y-2 text-sm text-muted-foreground">
           {shortcuts.map((shortcut, index) => (
             <div
               key={shortcut.action}
-              className={`flex justify-between items-center py-1 ${
-                index > 0 ? "border-t border-gray-200 dark:border-gray-700" : ""
+              className={`flex justify-between items-center py-1.5 ${
+                index > 0 ? "border-t border-border" : ""
               }`}
             >
-              <span>{shortcut.action}</span>
+              <span className="text-foreground">{shortcut.action}</span>
               <span className="flex space-x-1">
                 {shortcut.keys.map((key) => (
                   <kbd
                     key={key}
-                    className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded"
+                    className="px-2 py-0.5 text-xs font-mono bg-muted text-foreground border border-border rounded"
                   >
                     {key}
                   </kbd>
